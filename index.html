@@ -8,73 +8,131 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { background: #f2f4f6; }
-    body {
+    /* ══════════════ 공통 리셋 ══════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #f7f8fa; }
+    body { min-height: 100vh; }
+
+    #house-calc-wrapper,
+    #commercial-calc-wrapper { display: none; }
+
+    /* ══════════════ 메인 메뉴 ══════════════ */
+    #menu-screen {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: #f7f8fa;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+    .menu-inner {
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 48px 20px 32px;
+      flex: 1;
+    }
+    .menu-eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      color: #3182f6;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+    .menu-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #191919;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+    .menu-desc {
+      font-size: 14px;
+      color: #8b8b8b;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+    .menu-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .menu-option {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #fff;
+      border: 1px solid #ececec;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s, transform .1s;
+      font-family: inherit;
+    }
+    .menu-option:hover {
+      border-color: #3182f6;
+      box-shadow: 0 2px 10px rgba(49,130,246,0.10);
+    }
+    .menu-option:active { transform: scale(0.99); }
+    .menu-option-icon {
+      width: 44px; height: 44px;
+      flex-shrink: 0;
+      border-radius: 12px;
+      background: #ebf3ff;
+      display: flex; align-items: center; justify-content: center;
+      color: #3182f6;
+    }
+    .menu-option-icon svg { width: 22px; height: 22px; }
+    .menu-option-body { flex: 1; }
+    .menu-option-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #191919;
+      margin-bottom: 3px;
+    }
+    .menu-option-sub {
+      font-size: 12.5px;
+      color: #8b8b8b;
+      line-height: 1.4;
+    }
+    .menu-option-arrow { color: #b0b0b0; flex-shrink: 0; }
+    .menu-option-arrow svg { width: 18px; height: 18px; }
+
+    .menu-footer-notice {
+      font-size: 11px;
+      color: #b0b0b0;
+      line-height: 1.7;
+      padding: 0 20px 24px;
+      max-width: 480px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    /* 계산기 화면 안의 "메인으로" 버튼 (주택 계산기용) */
+    .to-menu-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: #8b95a1;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 4px 0 10px;
+    }
+    .to-menu-btn:hover { color: #3182f6; }
+    .to-menu-btn svg { width: 15px; height: 15px; }
+
+    /* ══════════════ [주택] 계산기 스타일 ══════════════ */
+    #house-calc-wrapper {
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
         "Pretendard Variable", Pretendard, "Noto Sans KR", sans-serif;
+      background: #f2f4f6;
       color: #191f28;
       min-height: 100vh;
     }
 
-    /* ══════════════ 메인 메뉴 ══════════════ */
-    #menu-screen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 20px;
-    }
-    .menu-shell { width: 100%; max-width: 440px; }
-    .menu-eyebrow {
-      font-size: 13px; font-weight: 700; color: #3182f6;
-      letter-spacing: 0.02em; margin-bottom: 10px;
-    }
-    .menu-title {
-      font-size: 28px; font-weight: 800; color: #191f28;
-      line-height: 1.3; margin-bottom: 12px;
-    }
-    .menu-desc {
-      font-size: 14px; color: #6b7684; line-height: 1.6; margin-bottom: 32px;
-    }
-    .menu-options { display: flex; flex-direction: column; gap: 12px; }
-    .menu-option {
-      display: flex; align-items: center; gap: 14px;
-      width: 100%; text-align: left;
-      background: #fff; border: 1.5px solid #e5e8eb; border-radius: 16px;
-      padding: 20px; cursor: pointer;
-      transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
-      font-family: inherit;
-    }
-    .menu-option:hover { border-color: #3182f6; box-shadow: 0 4px 16px rgba(49,130,246,0.10); }
-    .menu-option:active { transform: scale(0.98); }
-    .menu-option-icon {
-      width: 46px; height: 46px; flex-shrink: 0;
-      border-radius: 12px; background: #eff6ff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-    }
-    .menu-option-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .menu-option-title { font-size: 16px; font-weight: 700; color: #191f28; }
-    .menu-option-sub { font-size: 12px; color: #8b95a1; line-height: 1.5; }
-    .menu-option-arrow { font-size: 22px; color: #c2c8cf; flex-shrink: 0; }
-    .menu-footnote {
-      font-size: 12px; color: #8b95a1; line-height: 1.6;
-      text-align: center; margin-top: 28px; padding: 0 8px;
-    }
-
-    /* ══════════════ 계산기 화면 공통 래퍼 ══════════════ */
-    #house-calc-wrapper { display: none; background: #f2f4f6; min-height: 100vh; }
-    #commercial-calc-wrapper { display: none; background: #f7f8fa; min-height: 100vh; padding-bottom: 60px; }
-
-    .menu-back-btn {
-      background: none; border: none; cursor: pointer;
-      font-family: inherit; font-size: 13px; font-weight: 600;
-      color: #8b95a1; padding: 0 0 10px; display: block;
-    }
-    .menu-back-btn:hover { color: #3182f6; }
-
-    /* ══════════════ [주택] 계산기 스타일 ══════════════ */
     /* ── 상단 헤더 ── */
     .top-bar {
       background: #fff;
@@ -324,7 +382,6 @@
     .ac-item mark { background: none; color: #3182f6; font-weight: 700; }
 
     /* ══════════════ [주택 외] 계산기 스타일 ══════════════ */
-
     :root {
       --blue: #3182f6;
       --blue-hover: #1b6fe0;
@@ -348,6 +405,13 @@
       --radius-lg: 16px;
     }
 
+    #commercial-calc-wrapper {
+      font-family: var(--font);
+      background: #f7f8fa;
+      color: var(--gray-900);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
 
     /* Header */
     .header {
@@ -650,7 +714,7 @@
       margin-top: 24px;
       display: none;
     }
-    .cx-result-header {
+    .c-result-header {
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -732,7 +796,7 @@
       border-radius: 99px;
     }
 
-    .cx-notice {
+    .c-notice {
       font-size: 11px;
       color: var(--gray-400);
       line-height: 1.7;
@@ -740,37 +804,54 @@
       padding-top: 12px;
       border-top: 1px solid var(--gray-100);
     }
-    .cx-notice strong { color: var(--gray-500); }
+    .c-notice strong { color: var(--gray-500); }
   </style>
 </head>
 <body>
 
   <!-- ══════════════ 메인 메뉴 ══════════════ -->
   <div id="menu-screen">
-    <div class="menu-shell">
-      <p class="menu-eyebrow">부동산 세금 계산</p>
-      <h1 class="menu-title">양도소득세<br>계산기</h1>
-      <p class="menu-desc">양도하는 부동산 종류를 선택하면<br>맞춤 계산기로 이동해요.</p>
+    <div class="menu-inner">
+      <p class="menu-eyebrow">양도소득세 계산기</p>
+      <h1 class="menu-title">어떤 자산을<br>양도하시나요?</h1>
+      <p class="menu-desc">자산 종류에 맞는 계산기를 선택하면<br>취득·양도 정보를 입력해 세금을 계산해드려요.</p>
+
       <div class="menu-options">
-        <button class="menu-option" onclick="goToHouse()">
-          <span class="menu-option-icon">🏠</span>
+        <button type="button" class="menu-option" onclick="goToHouse()">
+          <span class="menu-option-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>
+            </svg>
+          </span>
           <span class="menu-option-body">
             <span class="menu-option-title">주택</span>
-            <span class="menu-option-sub">아파트·단독·다세대 등 — 1세대 1주택 비과세, 조정지역 중과 반영</span>
+            <span class="menu-option-sub">아파트·빌라·단독주택 등 · 조정대상지역, 1세대1주택 비과세 반영</span>
           </span>
-          <span class="menu-option-arrow">›</span>
+          <span class="menu-option-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </span>
         </button>
-        <button class="menu-option" onclick="goToCommercial()">
-          <span class="menu-option-icon">🏢</span>
+
+        <button type="button" class="menu-option" onclick="goToCommercial()">
+          <span class="menu-option-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1"/>
+            </svg>
+          </span>
           <span class="menu-option-body">
             <span class="menu-option-title">주택 외 (상가·빌딩)</span>
-            <span class="menu-option-sub">상가·빌딩·토지 등 — 장기보유특별공제, 토지·건물 분리 계산 지원</span>
+            <span class="menu-option-sub">상가·빌딩·토지 등 · 장기보유특별공제(최대 30%) 반영</span>
           </span>
-          <span class="menu-option-arrow">›</span>
+          <span class="menu-option-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </span>
         </button>
       </div>
-      <p class="menu-footnote">※ 본 계산기는 참고용이며 법적 효력이 없습니다.<br>정확한 세액은 세무사 등 전문가 상담을 권장합니다.</p>
     </div>
+    <p class="menu-footer-notice">
+      본 계산기는 참고용이며 법적 효력이 없습니다.<br>
+      정확한 세액은 세무사 상담을 권장합니다.
+    </p>
   </div>
 
   <!-- ══════════════ [주택] 계산기 ══════════════ -->
@@ -779,8 +860,11 @@
 <!-- ══════════════ 입력 위자드 ══════════════ -->
 <div id="wizard-section">
   <div class="top-bar">
-    <button class="menu-back-btn" onclick="goToMenu()" aria-label="메인으로">← 메인으로</button>
-    <h1>주택 양도소득세 계산기</h1>
+    <button class="to-menu-btn" onclick="goToMenu()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      메인으로
+    </button>
+    <h1>양도소득세 계산기</h1>
     <div class="step-indicator" id="step-indicator">
       <div class="step-dot active" id="sd1">1</div>
       <div class="step-line" id="sl1"></div>
@@ -916,7 +1000,10 @@
 <!-- ══════════════ 결과 ══════════════ -->
 <div id="result-section">
   <div class="result-header">
-    <button class="menu-back-btn" onclick="goToMenu()" aria-label="메인으로">← 메인으로</button>
+    <button class="to-menu-btn" onclick="goToMenu()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      메인으로
+    </button>
     <h1>계산 결과</h1>
   </div>
   <div class="result-body">
@@ -938,7 +1025,7 @@
 
   <header class="header">
     <div class="header-inner">
-      <button class="header-back" onclick="goToMenu()" aria-label="메인으로">
+      <button class="header-back" onclick="goToMenu()" aria-label="뒤로가기">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M15 18l-6-6 6-6"/>
         </svg>
@@ -1059,7 +1146,7 @@
 
     <!-- 결과 -->
     <div class="result-card" id="resultCard">
-      <div class="cx-result-header">
+      <div class="c-result-header">
         <div>
           <p class="result-eyebrow">총 납부할 양도소득세</p>
           <p class="result-total" id="resFinal">0원</p>
@@ -1134,7 +1221,7 @@
         <span class="result-row-val" id="r12"></span>
       </div>
 
-      <p class="cx-notice">
+      <p class="c-notice">
         <strong>※ 유의사항</strong><br>
         등기된 부동산 기준이며, 장기보유특별공제는 3년 이상 보유 시 연 2%씩 최대 30% 공제됩니다.<br>
         본 계산기는 참고용으로, 실제 세액은 세무사 등 전문가 확인을 권장해요.
@@ -1156,6 +1243,7 @@
     function goToMenu() { showScreen('menu'); }
     function goToHouse() { showScreen('house'); }
     function goToCommercial() { showScreen('commercial'); }
+    showScreen('menu');
   </script>
 
   <script>
@@ -2499,8 +2587,16 @@ function calculate() {
   const resideMonth = +document.getElementById('resideMonth').value || 0;
   const resideMonths = resideYear * 12 + resideMonth;
 
-  const regulated = checkRegulated(region, acqDate);
-  const isReg = regulated ? regulated.isRegulated : false;
+  // 조정대상지역 판정 기준일은 목적에 따라 다름
+  //  - 1세대1주택 2년 거주요건: 취득일 기준
+  //  - 다주택자(2·3주택) 중과세율: 양도일 기준
+  const regulatedAcq  = checkRegulated(region, acqDate);
+  const regulatedSale = checkRegulated(region, saleDate);
+  const isRegAcq  = regulatedAcq  ? regulatedAcq.isRegulated  : false;
+  const isRegSale = regulatedSale ? regulatedSale.isRegulated : false;
+
+  const isReg = selectedHouse === 1 ? isRegAcq : isRegSale;
+  const regulated = selectedHouse === 1 ? regulatedAcq : regulatedSale;
 
   // 보유기간 — 문자열 직접 파싱
   const holdM  = getHoldMonths(acqDate, saleDate);
@@ -2508,7 +2604,7 @@ function calculate() {
   const holdMr = holdM % 12;
   const gain   = salePrice - acqPrice;
 
-  renderResult({ region, acqDate, saleDate, acqPrice, salePrice, resideMonths, holdM, holdY, holdMr, isReg, regulated, gain, houseN: selectedHouse });
+  renderResult({ region, acqDate, saleDate, acqPrice, salePrice, resideMonths, holdM, holdY, holdMr, isReg, isRegAcq, isRegSale, regulated, regulatedAcq, regulatedSale, gain, houseN: selectedHouse });
 }
 
 // ============================================================
@@ -2522,7 +2618,8 @@ function renderResult(p) {
   const resideY   = Math.floor(p.resideMonths / 12);
   const resideM   = p.resideMonths % 12;
   const resideStr = `${resideY}년. ${resideM}개월.`;
-  const regLabel  = p.isReg ? '🚨 조정대상지역' : '✅ 비규제지역';
+  const regBasis  = p.houseN === 1 ? '취득일 기준' : '양도일 기준';
+  const regLabel  = p.isReg ? `🚨 조정대상지역 (${regBasis})` : `✅ 비규제지역 (${regBasis})`;
 
   const r = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, p.isReg);
 
@@ -2757,18 +2854,18 @@ function resetAll() {
         return;
       }
 
-      const cAcqPrice = parseNum(document.getElementById('cAcqPrice').value);
+      const acqPrice = parseNum(document.getElementById('cAcqPrice').value);
       const trfPrice = parseNum(document.getElementById('trfPrice').value);
       const expense  = parseNum(document.getElementById('expense').value);
 
-      if (!cAcqPrice || !trfPrice) {
+      if (!acqPrice || !trfPrice) {
         showErr('취득가액과 양도가액을 입력해주세요.');
         return;
       }
 
       const holdYears = getHoldYears(aY, aM, aD, tY, tM, tD);
       const ltcRate   = getLtcRate(holdYears);
-      const gain      = trfPrice - cAcqPrice - expense;
+      const gain      = trfPrice - acqPrice - expense;
 
       const rc = document.getElementById('resultCard');
       rc.style.display = 'block';
@@ -2778,7 +2875,7 @@ function resetAll() {
       document.getElementById('rPeriodChip').textContent    = holdYears + '년 · ' + Math.round(ltcRate * 100) + '%';
 
       document.getElementById('r1').textContent = numFmt(trfPrice);
-      document.getElementById('r2').textContent = '-' + numFmt(cAcqPrice);
+      document.getElementById('r2').textContent = '-' + numFmt(acqPrice);
       document.getElementById('r3').textContent = '-' + numFmt(expense);
       document.getElementById('r4').textContent = gain <= 0 ? '0원 (차익 없음)' : numFmt(gain);
 
