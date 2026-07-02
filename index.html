@@ -1,0 +1,2818 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>양도소득세 계산기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #f2f4f6; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+        "Pretendard Variable", Pretendard, "Noto Sans KR", sans-serif;
+      color: #191f28;
+      min-height: 100vh;
+    }
+
+    /* ══════════════ 메인 메뉴 ══════════════ */
+    #menu-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+    }
+    .menu-shell { width: 100%; max-width: 440px; }
+    .menu-eyebrow {
+      font-size: 13px; font-weight: 700; color: #3182f6;
+      letter-spacing: 0.02em; margin-bottom: 10px;
+    }
+    .menu-title {
+      font-size: 28px; font-weight: 800; color: #191f28;
+      line-height: 1.3; margin-bottom: 12px;
+    }
+    .menu-desc {
+      font-size: 14px; color: #6b7684; line-height: 1.6; margin-bottom: 32px;
+    }
+    .menu-options { display: flex; flex-direction: column; gap: 12px; }
+    .menu-option {
+      display: flex; align-items: center; gap: 14px;
+      width: 100%; text-align: left;
+      background: #fff; border: 1.5px solid #e5e8eb; border-radius: 16px;
+      padding: 20px; cursor: pointer;
+      transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+      font-family: inherit;
+    }
+    .menu-option:hover { border-color: #3182f6; box-shadow: 0 4px 16px rgba(49,130,246,0.10); }
+    .menu-option:active { transform: scale(0.98); }
+    .menu-option-icon {
+      width: 46px; height: 46px; flex-shrink: 0;
+      border-radius: 12px; background: #eff6ff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .menu-option-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .menu-option-title { font-size: 16px; font-weight: 700; color: #191f28; }
+    .menu-option-sub { font-size: 12px; color: #8b95a1; line-height: 1.5; }
+    .menu-option-arrow { font-size: 22px; color: #c2c8cf; flex-shrink: 0; }
+    .menu-footnote {
+      font-size: 12px; color: #8b95a1; line-height: 1.6;
+      text-align: center; margin-top: 28px; padding: 0 8px;
+    }
+
+    /* ══════════════ 계산기 화면 공통 래퍼 ══════════════ */
+    #house-calc-wrapper { display: none; background: #f2f4f6; min-height: 100vh; }
+    #commercial-calc-wrapper { display: none; background: #f7f8fa; min-height: 100vh; padding-bottom: 60px; }
+
+    .menu-back-btn {
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      color: #8b95a1; padding: 0 0 10px; display: block;
+    }
+    .menu-back-btn:hover { color: #3182f6; }
+
+    /* ══════════════ [주택] 계산기 스타일 ══════════════ */
+    /* ── 상단 헤더 ── */
+    .top-bar {
+      background: #fff;
+      padding: 16px 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 1px 0 #f2f4f6;
+    }
+    .top-bar h1 { font-size: 17px; font-weight: 700; color: #191f28; margin-bottom: 14px; }
+
+    /* ── 스텝 인디케이터 ── */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding-bottom: 14px;
+    }
+    .step-dot {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #e5e8eb;
+      color: #8b95a1;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .step-dot.active { background: #3182f6; color: #fff; }
+    .step-dot.done   { background: #d1e5fe; color: #3182f6; }
+    .step-line { flex: 1; height: 2px; background: #e5e8eb; transition: background 0.2s; }
+    .step-line.done { background: #d1e5fe; }
+
+    /* ── 스텝 본문 ── */
+    .step-body { padding: 24px 20px 40px; max-width: 480px; margin: 0 auto; }
+
+    .step-page { display: none; animation: fadeUp 0.3s ease; }
+    .step-page.active { display: block; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title { font-size: 20px; font-weight: 700; color: #191f28; margin-bottom: 6px; }
+    .step-desc  { font-size: 14px; color: #6b7684; margin-bottom: 24px; line-height: 1.5; }
+
+    /* ── 입력 ── */
+    .input-item { margin-bottom: 20px; }
+    .input-item label {
+      display: block; font-size: 13px; font-weight: 600;
+      color: #4e5968; margin-bottom: 8px;
+    }
+    .input-item input, .input-item select {
+      width: 100%; padding: 15px 16px;
+      border: 1.5px solid #e5e8eb; border-radius: 12px;
+      font-size: 16px; color: #191f28; background: #fff; outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .input-item input:focus, .input-item select:focus { border-color: #3182f6; }
+    .input-hint { font-size: 12px; color: #8b95a1; margin-top: 6px; }
+    .amount-preview { font-size: 13px; color: #3182f6; font-weight: 600; margin-top: 6px; min-height: 18px; }
+
+    .amount-wrap { position: relative; }
+    .amount-wrap input { padding-right: 44px; }
+    .amount-unit {
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+      font-size: 14px; color: #8b95a1; pointer-events: none;
+    }
+
+    .row2 { display: flex; gap: 10px; }
+    .row2 .input-item { flex: 1; }
+
+    /* ── 지역 검색 자동완성 ── */
+    .region-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; margin-top: 10px;
+    }
+    .badge-reg  { background: #fff0f1; color: #f04452; }
+    .badge-norm { background: #eff6ff; color: #3182f6; }
+
+    /* ── 주택수 선택 ── */
+    .house-tabs { display: flex; gap: 8px; }
+    .house-tab {
+      flex: 1; padding: 14px 0;
+      border: 1.5px solid #e5e8eb; border-radius: 12px;
+      background: #fff; font-size: 15px; font-weight: 600;
+      color: #8b95a1; cursor: pointer; text-align: center;
+      transition: all 0.15s;
+    }
+    .house-tab.active { border-color: #3182f6; background: #eff6ff; color: #3182f6; }
+
+    /* ── 버튼: 입력단 바로 아래 ── */
+    .bottom-btn-wrap {
+      padding: 24px 0 8px;
+    }
+    .btn-next {
+      width: 100%; padding: 16px;
+      background: #3182f6; color: #fff;
+      border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-next:disabled { background: #c2d1e8; cursor: default; }
+    .btn-next:not(:disabled):active { background: #1b64da; }
+    .btn-back {
+      width: 100%; padding: 13px;
+      background: transparent; color: #6b7684;
+      border: none; font-size: 14px; font-weight: 600;
+      cursor: pointer; margin-top: 2px;
+    }
+
+    /* ── 에러 ── */
+    .err-box {
+      background: #fff0f1; border-radius: 10px;
+      padding: 11px 14px; font-size: 13px;
+      color: #f04452; font-weight: 600;
+      margin-bottom: 16px; display: none;
+    }
+
+    /* ══════════════════ 결과 ══════════════════ */
+    #result-section { display: none; }
+
+    .result-header {
+      background: #fff; padding: 20px 20px 0;
+      position: sticky; top: 0; z-index: 10;
+      box-shadow: 0 1px 0 #f2f4f6;
+    }
+    .result-header h1 { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+
+    .result-body { padding: 16px 20px 80px; max-width: 480px; margin: 0 auto; }
+
+    /* 요약 */
+    .summary-card {
+      border-radius: 16px; padding: 22px 20px;
+      margin-bottom: 12px; color: #fff;
+    }
+    .summary-card.tax  { background: #3182f6; }
+    .summary-card.free { background: #03b26c; }
+    .sc-label { font-size: 13px; opacity: 0.85; margin-bottom: 6px; }
+    .sc-amount { font-size: 28px; font-weight: 700; margin-bottom: 2px; }
+    .sc-note { font-size: 13px; opacity: 0.75; }
+    .sc-row {
+      display: flex; justify-content: space-between;
+      font-size: 13px; opacity: 0.85;
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.25);
+    }
+    .sc-row + .sc-row { border-top: none; margin-top: 4px; padding-top: 0; }
+
+    /* 카드 */
+    .rcard {
+      background: #fff; border-radius: 16px;
+      padding: 20px; margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .rcard-title { font-size: 15px; font-weight: 700; color: #191f28; margin-bottom: 14px; }
+
+    .calc-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 0; font-size: 14px;
+      border-bottom: 1px solid #f2f4f6;
+    }
+    .calc-row:last-child { border-bottom: none; }
+    .cl { color: #6b7684; flex: 1; padding-right: 8px; }
+    .cv { font-weight: 600; color: #191f28; text-align: right; }
+    .cv.blue  { color: #3182f6; }
+    .cv.red   { color: #f04452; }
+    .cv.green { color: #03b26c; }
+    .calc-row.total .cl { font-weight: 700; color: #191f28; }
+    .calc-row.total .cv { font-size: 15px; }
+
+    /* 비교표 */
+    .compare-sub { font-size: 12px; font-weight: 700; color: #8b95a1; margin: 14px 0 8px; }
+
+    /* 절세 가이드 */
+    .guide-box { background: #f8f9fa; border-radius: 12px; padding: 14px 16px; }
+    .guide-item { display: flex; gap: 8px; font-size: 13px; color: #4e5968; line-height: 1.55; margin-bottom: 8px; }
+    .guide-item:last-child { margin-bottom: 0; }
+    .gdot { color: #3182f6; font-weight: 700; flex-shrink: 0; }
+
+    /* 다시계산 버튼 */
+    .btn-reset {
+      width: 100%; padding: 14px;
+      background: #f2f4f6; color: #4e5968;
+      border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .notice {
+      font-size: 12px; color: #8b95a1; line-height: 1.6;
+      text-align: center; padding: 0 8px; margin-top: 12px;
+    }
+
+    /* ── 날짜 커스텀 셀렉터 ── */
+    .date-picker { display: flex; gap: 8px; }
+    .date-picker select {
+      flex: 1; padding: 15px 10px;
+      border: 1.5px solid #e5e8eb; border-radius: 12px;
+      font-size: 15px; color: #191f28; background: #fff;
+      outline: none; cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+      text-align: center;
+      background-image: none;
+    }
+    .date-picker select:focus { border-color: #3182f6; }
+    .date-picker .dp-y { flex: 2.2; }
+    .date-picker .dp-m { flex: 1.5; }
+    .date-picker .dp-d { flex: 1.5; }
+    .date-picker select option:first-child { color: #8b95a1; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b95a1' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+    }
+
+    /* ── 커스텀 자동완성 드롭다운 ── */
+    .autocomplete-wrap { position: relative; }
+    .autocomplete-list {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: #fff;
+      border: 1.5px solid #e5e8eb;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      max-height: 224px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      z-index: 200;
+      display: none;
+    }
+    .autocomplete-list.open { display: block; }
+    .ac-item {
+      padding: 14px 16px;
+      font-size: 15px;
+      color: #191f28;
+      cursor: pointer;
+      border-bottom: 1px solid #f2f4f6;
+    }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item.focused { background: #eff6ff; color: #3182f6; }
+    .ac-item mark { background: none; color: #3182f6; font-weight: 700; }
+
+    /* ══════════════ [주택 외] 계산기 스타일 ══════════════ */
+
+    :root {
+      --blue: #3182f6;
+      --blue-hover: #1b6fe0;
+      --blue-light: #ebf3ff;
+      --blue-text: #1861c9;
+      --red: #f04452;
+      --green: #00b493;
+      --gray-50: #f9f9f9;
+      --gray-100: #f2f2f2;
+      --gray-200: #e8e8e8;
+      --gray-300: #d1d1d1;
+      --gray-400: #b0b0b0;
+      --gray-500: #8b8b8b;
+      --gray-600: #6b6b6b;
+      --gray-700: #4b4b4b;
+      --gray-800: #2e2e2e;
+      --gray-900: #191919;
+      --font: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+
+    /* Header */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-back {
+      width: 32px; height: 32px;
+      border: none; background: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      color: var(--gray-800);
+      flex-shrink: 0;
+    }
+    .header-back:hover { background: var(--gray-100); }
+    .header-back svg { width: 20px; height: 20px; }
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    /* Layout */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 28px 0 20px;
+    }
+    .hero-eyebrow {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--blue);
+      margin-bottom: 6px;
+      letter-spacing: 0.03em;
+    }
+    .hero-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+    .hero-desc {
+      font-size: 14px;
+      color: var(--gray-500);
+      line-height: 1.6;
+    }
+
+    /* Section */
+    .section { margin-top: 24px; }
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-500);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+    }
+
+    /* Field row */
+    .field {
+      display: flex;
+      align-items: center;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .field:last-child { border-bottom: none; }
+    .field-label {
+      font-size: 14px;
+      color: var(--gray-600);
+      flex-shrink: 0;
+      width: 100px;
+    }
+    .field-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+    .field input {
+      background: none;
+      border: none;
+      outline: none;
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gray-900);
+      text-align: right;
+      width: 100%;
+    }
+    .field input::placeholder { color: var(--gray-300); font-weight: 400; }
+    .field input:focus { color: var(--blue); }
+    .field-unit {
+      font-size: 13px;
+      color: var(--gray-400);
+      flex-shrink: 0;
+    }
+
+    /* Date field */
+    .date-field {
+      display: flex;
+      align-items: center;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .date-field:last-child { border-bottom: none; }
+    .date-label {
+      font-size: 14px;
+      color: var(--gray-600);
+      width: 100px;
+      flex-shrink: 0;
+    }
+    .date-inputs {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+    .date-inputs input {
+      background: none;
+      border: none;
+      outline: none;
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gray-900);
+      text-align: center;
+    }
+    .date-inputs input::placeholder { color: var(--gray-300); font-weight: 400; }
+    .date-inputs input:focus { color: var(--blue); }
+    .date-inputs input.year { width: 50px; }
+    .date-inputs input.month { width: 30px; }
+    .date-inputs input.day { width: 30px; }
+    .date-sep {
+      font-size: 14px;
+      color: var(--gray-400);
+      padding: 0 1px;
+    }
+
+    /* Toggle row */
+    .toggle-field {
+      display: flex;
+      align-items: center;
+      padding: 16px 18px;
+    }
+    .toggle-label-wrap { flex: 1; }
+    .toggle-label-main {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+    .toggle-label-sub {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+    .toss-toggle {
+      position: relative;
+      width: 48px; height: 26px;
+      flex-shrink: 0;
+    }
+    .toss-toggle input { opacity: 0; width: 0; height: 0; }
+    .toss-toggle-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--gray-300);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toss-toggle input:checked ~ .toss-toggle-bg { background: var(--blue); }
+    .toss-toggle-dot {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .toss-toggle input:checked ~ .toss-toggle-dot { transform: translateX(22px); }
+
+    /* Sub card (빌딩 토지/건물) */
+    .sub-card {
+      margin: 0 18px 16px;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-100);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .sub-card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-400);
+      letter-spacing: 0.05em;
+      padding: 10px 14px 8px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .sub-field {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .sub-field:last-child { border-bottom: none; }
+    .sub-field-label {
+      font-size: 13px;
+      color: var(--gray-600);
+      width: 60px;
+      flex-shrink: 0;
+    }
+    .sub-field input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-900);
+      text-align: right;
+    }
+    .sub-field input::placeholder { color: var(--gray-300); font-weight: 400; }
+    .sub-field input:focus { color: var(--blue); }
+    .sub-field-unit { font-size: 12px; color: var(--gray-400); margin-left: 3px; }
+
+    /* Hint */
+    .hint {
+      font-size: 12px;
+      color: var(--gray-400);
+      line-height: 1.6;
+      padding: 0 18px 14px;
+    }
+
+    /* Error */
+    .error-msg {
+      font-size: 13px;
+      color: var(--red);
+      padding: 10px 4px 0;
+      display: none;
+    }
+
+    /* CTA Button */
+    .cta-btn {
+      width: 100%;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.15s, transform 0.1s;
+      letter-spacing: -0.01em;
+    }
+    .cta-btn:hover { background: var(--blue-hover); }
+    .cta-btn:active { transform: scale(0.98); background: #1661c9; }
+    .cta-btn:disabled { background: var(--gray-300); cursor: not-allowed; }
+
+    /* Result */
+    .result-card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      padding: 20px 20px 16px;
+      margin-top: 24px;
+      display: none;
+    }
+    .cx-result-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .result-eyebrow {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 4px;
+    }
+    .result-total {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--gray-900);
+      letter-spacing: -0.02em;
+    }
+    .result-badge {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--blue-text);
+      background: var(--blue-light);
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    .result-divider {
+      height: 1px;
+      background: var(--gray-100);
+      margin: 12px 0;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 0;
+    }
+    .result-row-label {
+      font-size: 13px;
+      color: var(--gray-500);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-row-val {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .result-row-val.red { color: var(--red); }
+    .result-row-val.blue { color: var(--blue); }
+    .result-row-val.green { color: var(--green); }
+
+    .result-row.strong .result-row-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .result-row.strong .result-row-val {
+      font-size: 15px;
+      color: var(--blue);
+    }
+
+    .period-chip {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-500);
+      background: var(--gray-100);
+      padding: 2px 7px;
+      border-radius: 99px;
+    }
+
+    .rate-chip {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--blue-text);
+      background: var(--blue-light);
+      padding: 2px 7px;
+      border-radius: 99px;
+    }
+
+    .cx-notice {
+      font-size: 11px;
+      color: var(--gray-400);
+      line-height: 1.7;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--gray-100);
+    }
+    .cx-notice strong { color: var(--gray-500); }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════ 메인 메뉴 ══════════════ -->
+  <div id="menu-screen">
+    <div class="menu-shell">
+      <p class="menu-eyebrow">부동산 세금 계산</p>
+      <h1 class="menu-title">양도소득세<br>계산기</h1>
+      <p class="menu-desc">양도하는 부동산 종류를 선택하면<br>맞춤 계산기로 이동해요.</p>
+      <div class="menu-options">
+        <button class="menu-option" onclick="goToHouse()">
+          <span class="menu-option-icon">🏠</span>
+          <span class="menu-option-body">
+            <span class="menu-option-title">주택</span>
+            <span class="menu-option-sub">아파트·단독·다세대 등 — 1세대 1주택 비과세, 조정지역 중과 반영</span>
+          </span>
+          <span class="menu-option-arrow">›</span>
+        </button>
+        <button class="menu-option" onclick="goToCommercial()">
+          <span class="menu-option-icon">🏢</span>
+          <span class="menu-option-body">
+            <span class="menu-option-title">주택 외 (상가·빌딩)</span>
+            <span class="menu-option-sub">상가·빌딩·토지 등 — 장기보유특별공제, 토지·건물 분리 계산 지원</span>
+          </span>
+          <span class="menu-option-arrow">›</span>
+        </button>
+      </div>
+      <p class="menu-footnote">※ 본 계산기는 참고용이며 법적 효력이 없습니다.<br>정확한 세액은 세무사 등 전문가 상담을 권장합니다.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════ [주택] 계산기 ══════════════ -->
+  <div id="house-calc-wrapper">
+
+<!-- ══════════════ 입력 위자드 ══════════════ -->
+<div id="wizard-section">
+  <div class="top-bar">
+    <button class="menu-back-btn" onclick="goToMenu()" aria-label="메인으로">← 메인으로</button>
+    <h1>주택 양도소득세 계산기</h1>
+    <div class="step-indicator" id="step-indicator">
+      <div class="step-dot active" id="sd1">1</div>
+      <div class="step-line" id="sl1"></div>
+      <div class="step-dot" id="sd2">2</div>
+      <div class="step-line" id="sl2"></div>
+      <div class="step-dot" id="sd3">3</div>
+      <div class="step-line" id="sl3"></div>
+      <div class="step-dot" id="sd4">4</div>
+      <div class="step-line" id="sl4"></div>
+      <div class="step-dot" id="sd5">5</div>
+    </div>
+  </div>
+
+  <div class="step-body">
+
+    <!-- STEP 1: 소재지 -->
+    <div class="step-page active" id="step1">
+      <div class="step-title">소재지가 어디인가요?</div>
+      <div class="step-desc">시·군·구 또는 동·읍·면 단위로 검색하세요</div>
+      <div class="err-box" id="err1"></div>
+      <div class="input-item">
+        <label>지역 검색</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="region" placeholder="예: 강남구, 반곡동, 해운대구"
+            autocomplete="off" oninput="onRegionInput()" onfocus="onRegionInput()">
+          <div class="autocomplete-list" id="ac-list"></div>
+        </div>
+        <div id="region-badge-wrap"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: 취득 정보 -->
+    <div class="step-page" id="step2">
+      <div class="step-title">취득 정보를 입력하세요</div>
+      <div class="step-desc">잔금청산일 또는 등기접수일 기준</div>
+      <div class="err-box" id="err2"></div>
+      <div class="input-item">
+        <label>취득일자</label>
+        <div class="date-picker">
+          <select class="dp-y" id="acqY" onchange="syncDate('acq')">
+            <option value="">년도</option>
+          </select>
+          <select class="dp-m" id="acqM" onchange="syncDate('acq')">
+            <option value="">월</option>
+          </select>
+          <select class="dp-d" id="acqD" onchange="syncDate('acq')">
+            <option value="">일</option>
+          </select>
+        </div>
+        <input type="hidden" id="acqDate">
+      </div>
+      <div class="input-item">
+        <label>실지취득가액</label>
+        <div class="amount-wrap">
+          <input type="number" id="acqPrice" placeholder="0" inputmode="numeric" oninput="previewAmt('acqPrice','acqPreview')">
+          <span class="amount-unit">만원</span>
+        </div>
+        <div class="amount-preview" id="acqPreview"></div>
+      </div>
+    </div>
+
+    <!-- STEP 3: 양도 정보 -->
+    <div class="step-page" id="step3">
+      <div class="step-title">양도 정보를 입력하세요</div>
+      <div class="step-desc">실제 거래한 가액 기준</div>
+      <div class="err-box" id="err3"></div>
+      <div class="input-item">
+        <label>양도일자</label>
+        <div class="date-picker">
+          <select class="dp-y" id="saleY" onchange="syncDate('sale')">
+            <option value="">년도</option>
+          </select>
+          <select class="dp-m" id="saleM" onchange="syncDate('sale')">
+            <option value="">월</option>
+          </select>
+          <select class="dp-d" id="saleD" onchange="syncDate('sale')">
+            <option value="">일</option>
+          </select>
+        </div>
+        <input type="hidden" id="saleDate">
+      </div>
+      <div class="input-item">
+        <label>실지양도가액</label>
+        <div class="amount-wrap">
+          <input type="number" id="salePrice" placeholder="0" inputmode="numeric" oninput="previewAmt('salePrice','salePreview')">
+          <span class="amount-unit">만원</span>
+        </div>
+        <div class="amount-preview" id="salePreview"></div>
+      </div>
+    </div>
+
+    <!-- STEP 4: 거주기간 -->
+    <div class="step-page" id="step4">
+      <div class="step-title">실제 거주기간은?</div>
+      <div class="step-desc">해당 주택에 실거주한 기간을 입력하세요<br>미거주 시 0년 0개월</div>
+      <div class="err-box" id="err4"></div>
+      <div class="row2">
+        <div class="input-item">
+          <label>년</label>
+          <input type="number" id="resideYear" placeholder="0" min="0" max="50" inputmode="numeric">
+        </div>
+        <div class="input-item">
+          <label>개월</label>
+          <input type="number" id="resideMonth" placeholder="0" min="0" max="11" inputmode="numeric">
+        </div>
+      </div>
+      <div class="input-hint">년과 개월을 각각 입력하세요 (예: 3년 6개월)</div>
+    </div>
+
+    <!-- STEP 5: 주택 수 -->
+    <div class="step-page" id="step5">
+      <div class="step-title">보유 주택은 몇 채인가요?</div>
+      <div class="step-desc">양도 시점 기준 1세대 전체 보유 주택 수</div>
+      <div class="err-box" id="err5"></div>
+      <div class="house-tabs">
+        <button class="house-tab active" onclick="selectHouse(1)">1주택</button>
+        <button class="house-tab" onclick="selectHouse(2)">2주택</button>
+        <button class="house-tab" onclick="selectHouse(3)">3주택↑</button>
+      </div>
+      <div class="input-hint" style="margin-top:14px;" id="house-hint">1세대 1주택 비과세 요건 검토</div>
+    </div>
+
+    <!-- 공통 버튼 -->
+    <div class="bottom-btn-wrap">
+      <button class="btn-next" id="btn-next" onclick="nextStep()">다음</button>
+      <button class="btn-back" id="btn-back" onclick="prevStep()" style="display:none">이전으로</button>
+    </div>
+
+  </div><!-- /step-body -->
+</div><!-- /wizard-section -->
+
+
+<!-- ══════════════ 결과 ══════════════ -->
+<div id="result-section">
+  <div class="result-header">
+    <button class="menu-back-btn" onclick="goToMenu()" aria-label="메인으로">← 메인으로</button>
+    <h1>계산 결과</h1>
+  </div>
+  <div class="result-body">
+    <button class="btn-reset" onclick="resetAll()">← 다시 계산하기</button>
+    <div id="result-body"></div>
+    <div class="notice">
+      ※ 본 계산기는 참고용이며 법적 효력이 없습니다.<br>
+      필요경비(자본적지출·양도비용)는 반영되지 않습니다.<br>
+      정확한 세액은 세무사 상담을 권장합니다.
+    </div>
+  </div>
+</div>
+
+
+  </div><!-- /house-calc-wrapper -->
+
+  <!-- ══════════════ [주택 외] 계산기 ══════════════ -->
+  <div id="commercial-calc-wrapper">
+
+  <header class="header">
+    <div class="header-inner">
+      <button class="header-back" onclick="goToMenu()" aria-label="메인으로">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <span class="header-title">주택 외 양도세 계산기</span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <div class="hero">
+      <p class="hero-eyebrow">상가 · 빌딩 전용</p>
+      <h1 class="hero-title">내 부동산<br>양도세를 계산해요</h1>
+      <p class="hero-desc">취득·양도 정보를 입력하면 장기보유특별공제를<br>자동 반영해 세금을 계산해드려요.</p>
+    </div>
+
+    <!-- 부동산 종류 -->
+    <div class="section">
+      <p class="section-title">부동산 종류</p>
+      <div class="card">
+        <div class="toggle-field">
+          <div class="toggle-label-wrap">
+            <div class="toggle-label-main">빌딩 (토지·건물 분리)</div>
+            <div class="toggle-label-sub">계약서에 토지·건물 금액이 구분된 경우</div>
+          </div>
+          <label class="toss-toggle">
+            <input type="checkbox" id="isBldg">
+            <span class="toss-toggle-bg"></span>
+            <span class="toss-toggle-dot"></span>
+          </label>
+        </div>
+        <div id="bldgSection" style="display:none; border-top: 1px solid var(--gray-100);">
+          <div class="sub-card" style="margin-top:14px;">
+            <div class="sub-card-title">계약서상 금액</div>
+            <div class="sub-field">
+              <span class="sub-field-label">토지가액</span>
+              <input type="text" id="landVal" inputmode="numeric" placeholder="0">
+              <span class="sub-field-unit">원</span>
+            </div>
+            <div class="sub-field">
+              <span class="sub-field-label">건물가액</span>
+              <input type="text" id="bldgVal" inputmode="numeric" placeholder="0">
+              <span class="sub-field-unit">원</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 취득 정보 -->
+    <div class="section">
+      <p class="section-title">취득 정보</p>
+      <div class="card">
+        <div class="date-field">
+          <span class="date-label">취득일자</span>
+          <div class="date-inputs">
+            <input class="year" type="text" id="cAcqY" inputmode="numeric" maxlength="4" placeholder="YYYY">
+            <span class="date-sep">년</span>
+            <input class="month" type="text" id="cAcqM" inputmode="numeric" maxlength="2" placeholder="MM">
+            <span class="date-sep">월</span>
+            <input class="day" type="text" id="cAcqD" inputmode="numeric" maxlength="2" placeholder="DD">
+            <span class="date-sep">일</span>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">실지취득가액</span>
+          <div class="field-body">
+            <input type="text" id="cAcqPrice" inputmode="numeric" placeholder="0">
+            <span class="field-unit">원</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 양도 정보 -->
+    <div class="section">
+      <p class="section-title">양도 정보</p>
+      <div class="card">
+        <div class="date-field">
+          <span class="date-label">양도일자</span>
+          <div class="date-inputs">
+            <input class="year" type="text" id="trfY" inputmode="numeric" maxlength="4" placeholder="YYYY">
+            <span class="date-sep">년</span>
+            <input class="month" type="text" id="trfM" inputmode="numeric" maxlength="2" placeholder="MM">
+            <span class="date-sep">월</span>
+            <input class="day" type="text" id="trfD" inputmode="numeric" maxlength="2" placeholder="DD">
+            <span class="date-sep">일</span>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">실지양도가액</span>
+          <div class="field-body">
+            <input type="text" id="trfPrice" inputmode="numeric" placeholder="0">
+            <span class="field-unit">원</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 필요경비 -->
+    <div class="section">
+      <p class="section-title">필요경비</p>
+      <div class="card">
+        <div class="field">
+          <span class="field-label">경비 합계</span>
+          <div class="field-body">
+            <input type="text" id="expense" inputmode="numeric" placeholder="0">
+            <span class="field-unit">원</span>
+          </div>
+        </div>
+        <p class="hint">취득세, 중개수수료, 법무사 비용, 자본적 지출(대수선비) 등을 모두 합산해 입력해요</p>
+      </div>
+    </div>
+
+    <p class="error-msg" id="errMsg"></p>
+
+    <button class="cta-btn" id="calcBtn">양도세 계산하기</button>
+
+    <!-- 결과 -->
+    <div class="result-card" id="resultCard">
+      <div class="cx-result-header">
+        <div>
+          <p class="result-eyebrow">총 납부할 양도소득세</p>
+          <p class="result-total" id="resFinal">0원</p>
+        </div>
+        <span class="result-badge" id="resPeriodBadge"></span>
+      </div>
+
+      <div class="result-row">
+        <span class="result-row-label">실지양도가액</span>
+        <span class="result-row-val" id="r1"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">실지취득가액</span>
+        <span class="result-row-val red" id="r2"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">필요경비</span>
+        <span class="result-row-val red" id="r3"></span>
+      </div>
+
+      <div class="result-divider"></div>
+
+      <div class="result-row">
+        <span class="result-row-label">양도차익</span>
+        <span class="result-row-val" id="r4"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">
+          장기보유특별공제
+          <span class="period-chip" id="rPeriodChip"></span>
+        </span>
+        <span class="result-row-val blue" id="r5"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">기본공제</span>
+        <span class="result-row-val blue">-2,500,000원</span>
+      </div>
+
+      <div class="result-divider"></div>
+
+      <div class="result-row">
+        <span class="result-row-label">양도소득 과세표준</span>
+        <span class="result-row-val" id="r7"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">
+          적용 세율
+          <span class="rate-chip" id="rRateChip"></span>
+        </span>
+        <span class="result-row-val" id="r8"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">누진공제</span>
+        <span class="result-row-val red" id="r9"></span>
+      </div>
+
+      <div class="result-divider"></div>
+
+      <div class="result-row">
+        <span class="result-row-label">산출세액</span>
+        <span class="result-row-val" id="r10"></span>
+      </div>
+      <div class="result-row">
+        <span class="result-row-label">지방소득세 (10%)</span>
+        <span class="result-row-val" id="r11"></span>
+      </div>
+
+      <div class="result-divider"></div>
+
+      <div class="result-row strong">
+        <span class="result-row-label">총 납부세액</span>
+        <span class="result-row-val" id="r12"></span>
+      </div>
+
+      <p class="cx-notice">
+        <strong>※ 유의사항</strong><br>
+        등기된 부동산 기준이며, 장기보유특별공제는 3년 이상 보유 시 연 2%씩 최대 30% 공제됩니다.<br>
+        본 계산기는 참고용으로, 실제 세액은 세무사 등 전문가 확인을 권장해요.
+      </p>
+    </div>
+
+  </div>
+
+  </div><!-- /commercial-calc-wrapper -->
+
+  <script>
+    // ══════════════ 화면 전환 ══════════════
+    function showScreen(id) {
+      document.getElementById('menu-screen').style.display = (id === 'menu') ? 'flex' : 'none';
+      document.getElementById('house-calc-wrapper').style.display = (id === 'house') ? 'block' : 'none';
+      document.getElementById('commercial-calc-wrapper').style.display = (id === 'commercial') ? 'block' : 'none';
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+    function goToMenu() { showScreen('menu'); }
+    function goToHouse() { showScreen('house'); }
+    function goToCommercial() { showScreen('commercial'); }
+  </script>
+
+  <script>
+  // ══════════════ [주택] 계산기 로직 ══════════════
+// ============================================================
+// 조정지역 DB
+// ============================================================
+const rawCsvData = `지역명,시작일,종료일
+서울특별시 종로구,2025-10-16,
+서울특별시 중구,2025-10-16,
+서울특별시 성동구,2025-10-16,
+서울특별시 광진구,2025-10-16,
+서울특별시 동대문구,2025-10-16,
+서울특별시 중랑구,2025-10-16,
+서울특별시 성북구,2025-10-16,
+서울특별시 강북구,2025-10-16,
+서울특별시 도봉구,2025-10-16,
+서울특별시 노원구,2025-10-16,
+서울특별시 은평구,2025-10-16,
+서울특별시 서대문구,2025-10-16,
+서울특별시 마포구,2025-10-16,
+서울특별시 양천구,2025-10-16,
+서울특별시 강서구,2025-10-16,
+서울특별시 구로구,2025-10-16,
+서울특별시 금천구,2025-10-16,
+서울특별시 영등포구,2025-10-16,
+서울특별시 동작구,2025-10-16,
+서울특별시 관악구,2025-10-16,
+서울특별시 강동구,2025-10-16,
+서울특별시 종로구,2017-08-03,2023-01-04
+서울특별시 중구,2017-08-03,2023-01-04
+서울특별시 용산구,2017-08-03,
+서울특별시 성동구,2017-08-03,2023-01-04
+서울특별시 광진구,2017-08-03,2023-01-04
+서울특별시 동대문구,2017-08-03,2023-01-04
+서울특별시 중랑구,2017-08-03,2023-01-04
+서울특별시 성북구,2017-08-03,2023-01-04
+서울특별시 강북구,2017-08-03,2023-01-04
+서울특별시 도봉구,2017-08-03,2023-01-04
+서울특별시 노원구,2017-08-03,2023-01-04
+서울특별시 은평구,2017-08-03,2023-01-04
+서울특별시 서대문구,2017-08-03,2023-01-04
+서울특별시 마포구,2017-08-03,2023-01-04
+서울특별시 양천구,2017-08-03,2023-01-04
+서울특별시 강서구,2017-08-03,2023-01-04
+서울특별시 구로구,2017-08-03,2023-01-04
+서울특별시 금천구,2017-08-03,2023-01-04
+서울특별시 영등포구,2017-08-03,2023-01-04
+서울특별시 동작구,2017-08-03,2023-01-04
+서울특별시 관악구,2017-08-03,2023-01-04
+서울특별시 서초구,2017-08-03,
+서울특별시 강남구,2017-08-03,
+서울특별시 송파구,2017-08-03,
+서울특별시 강동구,2017-08-03,2023-01-04
+부산광역시 서구,2020-12-18,2022-09-25
+부산광역시 동구,2020-12-18,2022-09-25
+부산광역시 영도구,2020-12-18,2022-09-25
+부산광역시 부산진구,2020-12-18,2022-09-25
+부산광역시 북구,2020-12-18,2022-09-25
+부산광역시 사하구,2020-12-18,2022-09-25
+부산광역시 금정구,2020-12-18,2022-09-25
+부산광역시 강서구,2020-12-18,2022-09-25
+부산광역시 사상구,2020-12-18,2022-09-25
+부산광역시 동래구,2020-11-20,2022-09-25
+부산광역시 남구,2020-11-20,2022-09-25
+부산광역시 해운대구,2020-11-20,2022-09-25
+부산광역시 연제구,2020-11-20,2022-09-25
+부산광역시 수영구,2020-11-20,2022-09-25
+부산광역시 기장군 일광읍,2018-08-28,2018-12-30
+부산광역시 기장군 일광면,2018-08-28,2018-12-30
+부산광역시 부산진구,2017-08-03,2018-12-30
+부산광역시 동래구,2017-08-03,2019-11-07
+부산광역시 남구,2017-08-03,2018-12-30
+부산광역시 해운대구,2017-08-03,2019-11-07
+부산광역시 연제구,2017-08-03,2018-12-30
+부산광역시 수영구,2017-08-03,2019-11-07
+부산광역시 기장군,2017-08-03,2018-08-27
+대구광역시 중구,2020-12-18,2022-07-04
+대구광역시 동구,2020-12-18,2022-07-04
+대구광역시 서구,2020-12-18,2022-07-04
+대구광역시 남구,2020-12-18,2022-07-04
+대구광역시 북구,2020-12-18,2022-07-04
+대구광역시 달서구,2020-12-18,2022-07-04
+대구광역시 달성군 화원읍,2020-12-18,2022-07-04
+대구광역시 달성군 다사읍,2020-12-18,2022-07-04
+대구광역시 수성구,2020-11-20,2022-09-25
+인천광역시 중구 중앙동1가,2020-06-19,2022-11-13
+인천광역시 중구 중앙동2가,2020-06-19,2022-11-13
+인천광역시 중구 중앙동3가,2020-06-19,2022-11-13
+인천광역시 중구 중앙동4가,2020-06-19,2022-11-13
+인천광역시 중구 해안동1가,2020-06-19,2022-11-13
+인천광역시 중구 해안동2가,2020-06-19,2022-11-13
+인천광역시 중구 해안동3가,2020-06-19,2022-11-13
+인천광역시 중구 해안동4가,2020-06-19,2022-11-13
+인천광역시 중구 관동1가,2020-06-19,2022-11-13
+인천광역시 중구 관동2가,2020-06-19,2022-11-13
+인천광역시 중구 관동3가,2020-06-19,2022-11-13
+인천광역시 중구 항동1가,2020-06-19,2022-11-13
+인천광역시 중구 항동2가,2020-06-19,2022-11-13
+인천광역시 중구 항동3가,2020-06-19,2022-11-13
+인천광역시 중구 항동4가,2020-06-19,2022-11-13
+인천광역시 중구 항동5가,2020-06-19,2022-11-13
+인천광역시 중구 항동6가,2020-06-19,2022-11-13
+인천광역시 중구 항동7가,2020-06-19,2022-11-13
+인천광역시 중구 송학동1가,2020-06-19,2022-11-13
+인천광역시 중구 송학동2가,2020-06-19,2022-11-13
+인천광역시 중구 송학동3가,2020-06-19,2022-11-13
+인천광역시 중구 사동,2020-06-19,2022-11-13
+인천광역시 중구 신생동,2020-06-19,2022-11-13
+인천광역시 중구 신포동,2020-06-19,2022-11-13
+인천광역시 중구 답동,2020-06-19,2022-11-13
+인천광역시 중구 신흥동1가,2020-06-19,2022-11-13
+인천광역시 중구 신흥동2가,2020-06-19,2022-11-13
+인천광역시 중구 신흥동3가,2020-06-19,2022-11-13
+인천광역시 중구 선화동,2020-06-19,2022-11-13
+인천광역시 중구 유동,2020-06-19,2022-11-13
+인천광역시 중구 율목동,2020-06-19,2022-11-13
+인천광역시 중구 도원동,2020-06-19,2022-11-13
+인천광역시 중구 내동,2020-06-19,2022-11-13
+인천광역시 중구 경동,2020-06-19,2022-11-13
+인천광역시 중구 용동,2020-06-19,2022-11-13
+인천광역시 중구 인현동,2020-06-19,2022-11-13
+인천광역시 중구 전동,2020-06-19,2022-11-13
+인천광역시 중구 북성동1가,2020-06-19,2022-11-13
+인천광역시 중구 북성동2가,2020-06-19,2022-11-13
+인천광역시 중구 북성동3가,2020-06-19,2022-11-13
+인천광역시 중구 선린동,2020-06-19,2022-11-13
+인천광역시 중구 송월동1가,2020-06-19,2022-11-13
+인천광역시 중구 송월동2가,2020-06-19,2022-11-13
+인천광역시 중구 송월동3가,2020-06-19,2022-11-13
+인천광역시 중구 중산동,2020-06-19,2022-11-13
+인천광역시 중구 운남동,2020-06-19,2022-11-13
+인천광역시 중구 운서동,2020-06-19,2022-11-13
+인천광역시 중구 운북동,2020-06-19,2022-11-13
+인천광역시 중구 을왕동,2020-06-19,2020-12-17
+인천광역시 중구 남북동,2020-06-19,2020-12-17
+인천광역시 중구 덕교동,2020-06-19,2020-12-17
+인천광역시 중구 무의동,2020-06-19,2020-12-17
+인천광역시 동구,2020-06-19,2022-11-13
+인천광역시 미추홀구,2020-06-19,2022-11-13
+인천광역시 연수구,2020-06-19,2022-11-13
+인천광역시 남동구,2020-06-19,2022-11-13
+인천광역시 부평구,2020-06-19,2022-11-13
+인천광역시 계양구,2020-06-19,2022-11-13
+인천광역시 서구,2020-06-19,2022-11-13
+광주광역시 동구,2020-12-18,2022-09-25
+광주광역시 서구,2020-12-18,2022-09-25
+광주광역시 남구,2020-12-18,2022-09-25
+광주광역시 북구,2020-12-18,2022-09-25
+광주광역시 광산구,2020-12-18,2022-09-25
+대전광역시 동구,2020-06-19,2022-09-25
+대전광역시 중구,2020-06-19,2022-09-25
+대전광역시 서구,2020-06-19,2022-09-25
+대전광역시 유성구,2020-06-19,2022-09-25
+대전광역시 대덕구,2020-06-19,2022-09-25
+울산광역시 중구,2020-12-18,2022-09-25
+울산광역시 남구,2020-12-18,2022-09-25
+세종특별자치시 세종동,2022-07-01,2022-11-13
+세종특별자치시 누리동,2022-07-01,2022-11-13
+세종특별자치시 한별동,2022-07-01,2022-11-13
+세종특별자치시 다솜동,2022-07-01,2022-11-13
+세종특별자치시 용호동,2022-07-01,2022-11-13
+세종특별자치시 산울동,2020-07-15,2022-11-13
+세종특별자치시 해밀동,2020-07-15,2022-11-13
+세종특별자치시 집현동,2020-07-15,2022-11-13
+세종특별자치시 반곡동,2017-08-03,2022-11-13
+세종특별자치시 소담동,2017-08-03,2022-11-13
+경기도 수원시 장안구,2025-10-16,
+경기도 수원시 팔달구,2025-10-16,
+경기도 수원시 영통구,2025-10-16,
+경기도 성남시 수정구,2025-10-16,
+경기도 성남시 중원구,2025-10-16,
+경기도 성남시 분당구,2025-10-16,
+경기도 안양시 동안구,2025-10-16,
+경기도 광명시,2025-10-16,
+경기도 과천시,2025-10-16,
+경기도 의왕시,2025-10-16,
+경기도 하남시,2025-10-16,
+경기도 용인시 수지구,2025-10-16,
+경기도 광주시 고산동,2022-09-01,2022-11-13
+경기도 광주시 신현동,2022-09-01,2022-11-13
+경기도 광주시 능평동,2022-09-01,2022-11-13
+경기도 광주시 문형동,2022-09-01,2022-11-13
+경기도 광주시 추자동,2022-09-01,2022-11-13
+경기도 광주시 매산동,2022-09-01,2022-11-13
+경기도 광주시 양벌동,2022-09-01,2022-11-13
+경기도 동두천시 송내동,2021-08-30,2022-09-25
+경기도 동두천시 지행동,2021-08-30,2022-09-25
+경기도 동두천시 생연동,2021-08-30,2022-09-25
+경기도 동두천시 보산동,2021-08-30,2022-09-25
+경기도 동두천시 동두천동,2021-08-30,2022-09-25
+경기도 동두천시 상패동,2021-08-30,2022-09-25
+경기도 용인시 처인구 남사읍,2021-02-19,2022-11-13
+경기도 파주시 금촌동,2020-12-18,2022-09-25
+경기도 파주시 아동동,2020-12-18,2022-09-25
+경기도 파주시 야동동,2020-12-18,2022-09-25
+경기도 파주시 검산동,2020-12-18,2022-09-25
+경기도 파주시 맥금동,2020-12-18,2022-09-25
+경기도 파주시 교하동,2020-12-18,2022-09-25
+경기도 파주시 야당동,2020-12-18,2022-09-25
+경기도 파주시 다율동,2020-12-18,2022-09-25
+경기도 파주시 오도동,2020-12-18,2022-09-25
+경기도 파주시 상지석동,2020-12-18,2022-09-25
+경기도 파주시 산남동,2020-12-18,2022-09-25
+경기도 파주시 동패동,2020-12-18,2022-09-25
+경기도 파주시 당하동,2020-12-18,2022-09-25
+경기도 파주시 문발동,2020-12-18,2022-09-25
+경기도 파주시 송촌동,2020-12-18,2022-09-25
+경기도 파주시 목동동,2020-12-18,2022-09-25
+경기도 파주시 하지석동,2020-12-18,2022-09-25
+경기도 파주시 서패동,2020-12-18,2022-09-25
+경기도 파주시 신촌동,2020-12-18,2022-09-25
+경기도 파주시 연다산동,2020-12-18,2022-09-25
+경기도 파주시 와동동,2020-12-18,2022-09-25
+경기도 파주시 금릉동,2020-12-18,2022-09-25
+경기도 김포시 북변동,2020-11-20,2022-11-13
+경기도 김포시 걸포동,2020-11-20,2022-11-13
+경기도 김포시 운양동,2020-11-20,2022-11-13
+경기도 김포시 장기동,2020-11-20,2022-11-13
+경기도 김포시 감정동,2020-11-20,2022-11-13
+경기도 김포시 사우동,2020-11-20,2022-11-13
+경기도 김포시 풍무동,2020-11-20,2022-11-13
+경기도 김포시 마산동,2020-11-20,2022-11-13
+경기도 김포시 구래동,2020-11-20,2022-11-13
+경기도 김포시 고촌읍,2020-11-20,2022-11-13
+경기도 김포시 양촌읍,2020-11-20,2022-11-13
+경기도 의정부시,2020-06-19,2022-11-13
+경기도 부천시,2020-06-19,2022-11-13
+경기도 부천시 원미구,2020-06-19,2022-11-13
+경기도 부천시 소사구,2020-06-19,2022-11-13
+경기도 부천시 오정구,2020-06-19,2022-11-13
+경기도 평택시,2020-06-19,2022-09-25
+경기도 안산시,2020-06-19,2022-11-13
+경기도 안산시 상록구,2020-06-19,2022-11-13
+경기도 안산시 단원구 고잔동,2020-06-19,2022-11-13
+경기도 안산시 단원구 와동,2020-06-19,2022-11-13
+경기도 안산시 단원구 신길동,2020-06-19,2022-11-13
+경기도 안산시 단원구 성곡동,2020-06-19,2022-11-13
+경기도 안산시 단원구 원시동,2020-06-19,2022-11-13
+경기도 안산시 단원구 목내동,2020-06-19,2022-11-13
+경기도 안산시 단원구 초지동,2020-06-19,2022-11-13
+경기도 안산시 단원구 원곡동,2020-06-19,2022-11-13
+경기도 안산시 단원구 선부동,2020-06-19,2022-11-13
+경기도 안산시 단원구 대부동동,2020-06-19,2022-07-04
+경기도 안산시 단원구 대부북동,2020-06-19,2022-07-04
+경기도 안산시 단원구 대부남동,2020-06-19,2022-07-04
+경기도 안산시 단원구 선감동,2020-06-19,2022-07-04
+경기도 안산시 단원구 풍도동,2020-06-19,2022-07-04
+경기도 안산시 단원구 화정동,2020-06-19,2022-11-13
+경기도 고양시 덕양구,2020-06-19,2022-11-13
+경기도 고양시 일산동구,2020-06-19,2022-11-13
+경기도 고양시 일산서구,2020-06-19,2022-11-13
+경기도 남양주시 호평동,2020-06-19,2022-11-13
+경기도 남양주시 평내동,2020-06-19,2022-11-13
+경기도 남양주시 금곡동,2020-06-19,2022-11-13
+경기도 남양주시 일패동,2020-06-19,2022-11-13
+경기도 남양주시 이패동,2020-06-19,2022-11-13
+경기도 남양주시 삼패동,2020-06-19,2022-11-13
+경기도 남양주시 수석동,2020-06-19,2022-11-13
+경기도 남양주시 지금동,2020-06-19,2022-11-13
+경기도 남양주시 도농동,2020-06-19,2022-11-13
+경기도 남양주시 와부읍,2020-06-19,2022-11-13
+경기도 남양주시 진접읍,2020-06-19,2022-11-13
+경기도 남양주시 진건읍,2020-06-19,2022-11-13
+경기도 남양주시 오남읍,2020-06-19,2022-11-13
+경기도 남양주시 퇴계원읍,2020-06-19,2022-11-13
+경기도 남양주시 별내면,2020-06-19,2022-11-13
+경기도 오산시,2020-06-19,2022-11-13
+경기도 시흥시,2020-06-19,2022-11-13
+경기도 군포시,2020-06-19,2022-11-13
+경기도 용인시 처인구 김량장동,2020-06-19,2022-11-13
+경기도 용인시 처인구 역북동,2020-06-19,2022-11-13
+경기도 용인시 처인구 삼가동,2020-06-19,2022-11-13
+경기도 용인시 처인구 남동,2020-06-19,2022-11-13
+경기도 용인시 처인구 유방동,2020-06-19,2022-11-13
+경기도 용인시 처인구 고림동,2020-06-19,2022-11-13
+경기도 용인시 처인구 마평동,2020-06-19,2022-11-13
+경기도 용인시 처인구 운학동,2020-06-19,2022-11-13
+경기도 용인시 처인구 호동,2020-06-19,2022-11-13
+경기도 용인시 처인구 해곡동,2020-06-19,2022-11-13
+경기도 용인시 처인구 이동읍,2020-06-19,2022-11-13
+경기도 용인시 처인구 남사읍,2020-06-19,2021-02-18
+경기도 용인시 처인구 남사면,2020-06-19,2021-02-18
+경기도 용인시 처인구 원삼면 고당리,2020-06-19,2022-11-13
+경기도 용인시 처인구 원삼면 독성리,2020-06-19,2022-11-13
+경기도 용인시 처인구 원삼면 죽능리,2020-06-19,2022-11-13
+경기도 용인시 처인구 원삼면 목신리,2020-06-19,2022-11-13
+경기도 용인시 처인구 원삼면 학일리,2020-06-19,2022-11-13
+경기도 용인시 처인구 원삼면 문촌리,2020-06-19,2022-11-13
+경기도 안성시 봉산동,2020-06-19,2022-09-25
+경기도 안성시 숭인동,2020-06-19,2022-09-25
+경기도 안성시 영동,2020-06-19,2022-09-25
+경기도 안성시 봉남동,2020-06-19,2022-09-25
+경기도 안성시 구포동,2020-06-19,2022-09-25
+경기도 안성시 동본동,2020-06-19,2022-09-25
+경기도 안성시 명륜동,2020-06-19,2022-09-25
+경기도 안성시 옥천동,2020-06-19,2022-09-25
+경기도 안성시 낙원동,2020-06-19,2022-09-25
+경기도 안성시 창전동,2020-06-19,2022-09-25
+경기도 안성시 성남동,2020-06-19,2022-09-25
+경기도 안성시 신흥동,2020-06-19,2022-09-25
+경기도 안성시 인지동,2020-06-19,2022-09-25
+경기도 안성시 금산동,2020-06-19,2022-09-25
+경기도 안성시 연지동,2020-06-19,2022-09-25
+경기도 안성시 대천동,2020-06-19,2022-09-25
+경기도 안성시 서인동,2020-06-19,2022-09-25
+경기도 안성시 석정동,2020-06-19,2022-09-25
+경기도 안성시 아양동,2020-06-19,2022-09-25
+경기도 안성시 금석동,2020-06-19,2022-09-25
+경기도 안성시 계동,2020-06-19,2022-09-25
+경기도 안성시 옥산동,2020-06-19,2022-09-25
+경기도 안성시 사곡동,2020-06-19,2022-09-25
+경기도 안성시 도기동,2020-06-19,2022-09-25
+경기도 안성시 당왕동,2020-06-19,2022-09-25
+경기도 안성시 가사동,2020-06-19,2022-09-25
+경기도 안성시 가현동,2020-06-19,2022-09-25
+경기도 안성시 신건지동,2020-06-19,2022-09-25
+경기도 안성시 신소현동,2020-06-19,2022-09-25
+경기도 안성시 신모산동,2020-06-19,2022-09-25
+경기도 안성시 현수동,2020-06-19,2022-09-25
+경기도 안성시 발화동,2020-06-19,2022-09-25
+경기도 안성시 중리동,2020-06-19,2022-09-25
+경기도 안성시 공도읍,2020-06-19,2022-09-25
+경기도 안성시 보개면,2020-06-19,2020-12-17
+경기도 안성시 금광면,2020-06-19,2020-12-17
+경기도 안성시 서운면,2020-06-19,2020-12-17
+경기도 안성시 미양면,2020-06-19,2020-12-17
+경기도 안성시 대덕면,2020-06-19,2020-12-17
+경기도 안성시 양성면,2020-06-19,2020-12-17
+경기도 안성시 원곡면,2020-06-19,2022-09-25
+경기도 안성시 죽산면 칠장리,2020-06-19,2020-12-17
+경기도 안성시 죽산면 당목리,2020-06-19,2020-12-17
+경기도 안성시 죽산면 두교리,2020-06-19,2020-12-17
+경기도 안성시 삼죽면 내강리,2020-06-19,2020-12-17
+경기도 안성시 삼죽면 진촌리,2020-06-19,2020-12-17
+경기도 안성시 삼죽면 미장리,2020-06-19,2020-12-17
+경기도 안성시 삼죽면 마전리,2020-06-19,2020-12-17
+경기도 안성시 삼죽면 기솔리,2020-06-19,2020-12-17
+경기도 안성시 고삼면,2020-06-19,2020-12-17
+경기도 화성시 진안동,2020-06-19,2022-11-13
+경기도 화성시 병점동,2020-06-19,2022-11-13
+경기도 화성시 능동,2020-06-19,2022-11-13
+경기도 화성시 기산동,2020-06-19,2022-11-13
+경기도 화성시 반월동,2020-06-19,2022-11-13
+경기도 화성시 반정동,2020-06-19,2022-11-13
+경기도 화성시 황계동,2020-06-19,2022-11-13
+경기도 화성시 배양동,2020-06-19,2022-11-13
+경기도 화성시 기안동,2020-06-19,2022-11-13
+경기도 화성시 송산동,2020-06-19,2022-11-13
+경기도 화성시 안녕동,2020-06-19,2022-11-13
+경기도 화성시 반송동,2020-06-19,2022-11-13
+경기도 화성시 석우동,2020-06-19,2022-11-13
+경기도 화성시 오산동,2020-06-19,2022-11-13
+경기도 화성시 청계동,2020-06-19,2022-11-13
+경기도 화성시 영천동,2020-06-19,2022-11-13
+경기도 화성시 중동,2020-06-19,2022-11-13
+경기도 화성시 신동,2020-06-19,2022-11-13
+경기도 화성시 목동,2020-06-19,2022-11-13
+경기도 화성시 산척동,2020-06-19,2022-11-13
+경기도 화성시 장지동,2020-06-19,2022-11-13
+경기도 화성시 송동,2020-06-19,2022-11-13
+경기도 화성시 방교동,2020-06-19,2022-11-13
+경기도 화성시 금곡동,2020-06-19,2022-11-13
+경기도 화성시 새솔동,2020-06-19,2022-11-13
+경기도 화성시 봉담읍,2020-06-19,2022-11-13
+경기도 화성시 우정읍,2020-06-19,2022-11-13
+경기도 화성시 향남읍,2020-06-19,2022-11-13
+경기도 화성시 남양읍,2020-06-19,2022-11-13
+경기도 화성시 매송면,2020-06-19,2022-11-13
+경기도 화성시 비봉면,2020-06-19,2022-11-13
+경기도 화성시 마도면,2020-06-19,2022-11-13
+경기도 화성시 송산면,2020-06-19,2022-11-13
+경기도 화성시 서신면,2020-06-19,2022-07-04
+경기도 화성시 팔탄면,2020-06-19,2022-11-13
+경기도 화성시 장안면,2020-06-19,2022-11-13
+경기도 화성시 양감면,2020-06-19,2022-11-13
+경기도 화성시 정남면,2020-06-19,2022-11-13
+경기도 화성시 만세구 새솔동,2020-06-19,2022-11-13
+경기도 화성시 만세구 우정읍,2020-06-19,2022-11-13
+경기도 화성시 만세구 향남읍,2020-06-19,2022-11-13
+경기도 화성시 만세구 남양읍,2020-06-19,2022-11-13
+경기도 화성시 만세구 마도면,2020-06-19,2022-11-13
+경기도 화성시 만세구 송산면,2020-06-19,2022-11-13
+경기도 화성시 만세구 서신면,2020-06-19,2022-07-04
+경기도 화성시 만세구 팔탄면,2020-06-19,2022-11-13
+경기도 화성시 만세구 장안면,2020-06-19,2022-11-13
+경기도 화성시 만세구 양감면,2020-06-19,2022-11-13
+경기도 화성시 효행구 배양동,2020-06-19,2022-11-13
+경기도 화성시 효행구 기안동,2020-06-19,2022-11-13
+경기도 화성시 효행구 봉담읍,2020-06-19,2022-11-13
+경기도 화성시 효행구 매송면,2020-06-19,2022-11-13
+경기도 화성시 효행구 비봉면,2020-06-19,2022-11-13
+경기도 화성시 효행구 정남면,2020-06-19,2022-11-13
+경기도 화성시 병점구 진안동,2020-06-19,2022-11-13
+경기도 화성시 병점구 병점동,2020-06-19,2022-11-13
+경기도 화성시 병점구 능동,2020-06-19,2022-11-13
+경기도 화성시 병점구 기산동,2020-06-19,2022-11-13
+경기도 화성시 병점구 반월동,2020-06-19,2022-11-13
+경기도 화성시 병점구 반정동,2020-06-19,2022-11-13
+경기도 화성시 병점구 황계동,2020-06-19,2022-11-13
+경기도 화성시 병점구 송산동,2020-06-19,2022-11-13
+경기도 화성시 병점구 안녕동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 반송동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 석우동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 오산동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 청계동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 영천동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 중동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 신동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 목동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 산척동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 장지동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 송동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 방교동,2020-06-19,2022-11-13
+경기도 화성시 동탄구 금곡동,2020-06-19,2022-11-13
+경기도 광주시 경안동,2020-06-19,2022-11-13
+경기도 광주시 쌍령동,2020-06-19,2022-11-13
+경기도 광주시 송정동,2020-06-19,2022-11-13
+경기도 광주시 회덕동,2020-06-19,2022-11-13
+경기도 광주시 탄벌동,2020-06-19,2022-11-13
+경기도 광주시 목현동,2020-06-19,2022-11-13
+경기도 광주시 삼동,2020-06-19,2022-11-13
+경기도 광주시 중대동,2020-06-19,2022-11-13
+경기도 광주시 직동,2020-06-19,2022-11-13
+경기도 광주시 태전동,2020-06-19,2022-11-13
+경기도 광주시 장지동,2020-06-19,2022-11-13
+경기도 광주시 역동,2020-06-19,2022-11-13
+경기도 광주시 목동,2020-06-19,2022-11-13
+경기도 광주시 고산동,2020-06-19,2022-11-13
+경기도 광주시 신현동,2020-06-19,2022-11-13
+경기도 광주시 능평동,2020-06-19,2022-11-13
+경기도 광주시 문형동,2020-06-19,2022-11-13
+경기도 광주시 추자동,2020-06-19,2022-11-13
+경기도 광주시 매산동,2020-06-19,2022-11-13
+경기도 광주시 양벌동,2020-06-19,2022-11-13
+경기도 광주시 오포읍,2020-06-19,2022-08-31
+경기도 양주시 유양동,2020-06-19,2022-09-25
+경기도 양주시 어둔동,2020-06-19,2022-09-25
+경기도 양주시 남방동,2020-06-19,2022-09-25
+경기도 양주시 마전동,2020-06-19,2022-09-25
+경기도 양주시 산북동,2020-06-19,2022-09-25
+경기도 양주시 광사동,2020-06-19,2022-09-25
+경기도 양주시 만송동,2020-06-19,2022-09-25
+경기도 양주시 삼숭동,2020-06-19,2022-09-25
+경기도 양주시 고읍동,2020-06-19,2022-09-25
+경기도 양주시 덕정동,2020-06-19,2022-09-25
+경기도 양주시 봉양동,2020-06-19,2022-09-25
+경기도 양주시 회암동,2020-06-19,2022-09-25
+경기도 양주시 율정동,2020-06-19,2022-09-25
+경기도 양주시 옥정동,2020-06-19,2022-09-25
+경기도 양주시 고암동,2020-06-19,2022-09-25
+경기도 양주시 덕계동,2020-06-19,2022-09-25
+경기도 양주시 회정동,2020-06-19,2022-09-25
+경기도 양주시 백석읍,2020-06-19,2020-12-17
+경기도 양주시 은현면,2020-06-19,2020-12-17
+경기도 양주시 남면,2020-06-19,2020-12-17
+경기도 양주시 광적면,2020-06-19,2020-12-17
+경기도 양주시 장흥면,2020-06-19,2022-09-25
+경기도 수원시 장안구,2020-02-21,2022-11-13
+경기도 수원시 권선구,2020-02-21,2022-11-13
+경기도 수원시 영통구,2020-02-21,2022-11-13
+경기도 안양시 만안구,2020-02-21,2022-11-13
+경기도 의왕시,2020-02-21,2022-11-13
+경기도 수원시 팔달구 팔달로1가,2018-12-31,2022-11-13
+경기도 수원시 팔달구 팔달로2가,2018-12-31,2022-11-13
+경기도 수원시 팔달구 팔달로3가,2018-12-31,2022-11-13
+경기도 수원시 팔달구 남창동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 영동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 중동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 구천동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 남수동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 매향동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 북수동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 신풍동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 장안동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 교동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 매교동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 매산로1가,2018-12-31,2022-11-13
+경기도 수원시 팔달구 매산로2가,2018-12-31,2022-11-13
+경기도 수원시 팔달구 매산로3가,2018-12-31,2022-11-13
+경기도 수원시 팔달구 고등동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 화서동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 지동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 우만동,2018-12-31,2022-11-13
+경기도 수원시 팔달구 인계동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 신갈동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 구갈동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 상갈동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 하갈동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 보라동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 지곡동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 공세동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 고매동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 농서동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 서천동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 영덕동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 언남동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 마북동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 청덕동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 동백동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 중동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 상하동,2018-12-31,2022-11-13
+경기도 용인시 기흥구 보정동,2018-12-31,2022-11-13
+경기도 용인시 수지구 풍덕천동,2018-12-31,2022-11-13
+경기도 용인시 수지구 죽전동,2018-12-31,2022-11-13
+경기도 용인시 수지구 동천동,2018-12-31,2022-11-13
+경기도 용인시 수지구 고기동,2018-12-31,2022-11-13
+경기도 용인시 수지구 신봉동,2018-12-31,2022-11-13
+경기도 용인시 수지구 성복동,2018-12-31,2022-11-13
+경기도 용인시 수지구 상현동,2018-12-31,2022-11-13
+경기도 수원시 장안구 연무동,2018-08-28,2022-11-13
+경기도 수원시 팔달구 우만동,2018-08-28,2022-11-13
+경기도 수원시 영통구 매탄동,2018-08-28,2022-11-13
+경기도 수원시 영통구 원천동,2018-08-28,2022-11-13
+경기도 수원시 영통구 이의동,2018-08-28,2022-11-13
+경기도 수원시 영통구 하동,2018-08-28,2022-11-13
+경기도 안양시 동안구,2018-08-28,2022-11-13
+경기도 구리시,2018-08-28,2022-11-13
+경기도 용인시 기흥구 영덕동,2018-08-28,2022-11-13
+경기도 용인시 수지구 상현동,2018-08-28,2022-11-13
+경기도 화성시 중동,2018-01-22,2022-11-13
+경기도 화성시 신동,2018-01-22,2022-11-13
+경기도 화성시 목동,2018-01-22,2022-11-13
+경기도 화성시 산척동,2018-01-22,2022-11-13
+경기도 화성시 장지동,2018-01-22,2022-11-13
+경기도 화성시 송동,2018-01-22,2022-11-13
+경기도 화성시 방교동,2018-01-22,2022-11-13
+경기도 화성시 금곡동,2018-01-22,2022-11-13
+경기도 성남시 수정구,2017-08-03,2023-01-04
+경기도 성남시 중원구,2017-08-03,2022-11-13
+경기도 성남시 분당구,2017-08-03,2023-01-04
+경기도 광명시,2017-08-03,2023-01-04
+경기도 고양시 덕양구,2017-08-03,2019-11-07
+경기도 고양시 덕양구 신원동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 원흥동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 도내동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 지축동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 오금동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 삼송동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 동산동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 용두동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 대자동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 덕은동,2017-08-03,2022-11-13
+경기도 고양시 덕양구 향동동,2017-08-03,2022-11-13
+경기도 고양시 일산동구,2017-08-03,2019-11-07
+경기도 고양시 일산동구 장항동,2017-08-03,2022-11-13
+경기도 고양시 일산서구,2017-08-03,2019-11-07
+경기도 고양시 일산서구 대화동,2017-08-03,2022-11-13
+경기도 과천시,2017-08-03,2023-01-04
+경기도 남양주시,2017-08-03,2019-11-07
+경기도 남양주시 별내동,2017-08-03,2022-11-13
+경기도 남양주시 다산동,2017-08-03,2022-11-13
+경기도 하남시,2017-08-03,2023-01-04
+경기도 화성시 오산동,2017-08-03,2022-11-13
+경기도 화성시 청계동,2017-08-03,2022-11-13
+경기도 화성시 영천동,2017-08-03,2022-11-13
+경기도 화성시 중동,2017-08-03,2022-11-13
+경기도 화성시 신동,2017-08-03,2022-11-13
+경기도 화성시 목동,2017-08-03,2022-11-13
+경기도 화성시 산척동,2017-08-03,2022-11-13
+경기도 화성시 장지동,2017-08-03,2022-11-13
+경기도 화성시 송동,2017-08-03,2022-11-13
+경기도 화성시 방교동,2017-08-03,2022-11-13
+경기도 화성시 금곡동,2017-08-03,2022-11-13
+경기도 화성시 동탄면 중리,2017-08-03,2018-01-21
+경기도 화성시 동탄면 신리,2017-08-03,2018-01-21
+경기도 화성시 동탄면 목리,2017-08-03,2018-01-21
+경기도 화성시 동탄면 산척리,2017-08-03,2018-01-21
+경기도 화성시 동탄면 장지리,2017-08-03,2018-01-21
+경기도 화성시 동탄면 송리,2017-08-03,2018-01-21
+경기도 화성시 동탄면 방교리,2017-08-03,2018-01-21
+경기도 화성시 동탄면 금곡리,2017-08-03,2018-01-21
+경기도 화성시 동탄구 오산동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 청계동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 영천동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 중동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 신동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 목동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 산척동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 장지동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 송동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 방교동,2017-08-03,2022-11-13
+경기도 화성시 동탄구 금곡동,2017-08-03,2022-11-13
+충청북도 청주시 상당구 영동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 북문로1가,2020-06-19,2022-09-25
+충청북도 청주시 상당구 북문로2가,2020-06-19,2022-09-25
+충청북도 청주시 상당구 북문로3가,2020-06-19,2022-09-25
+충청북도 청주시 상당구 남문로1가,2020-06-19,2022-09-25
+충청북도 청주시 상당구 남문로2가,2020-06-19,2022-09-25
+충청북도 청주시 상당구 문화동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 서운동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 서문동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 남주동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 석교동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 수동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 탑동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 대성동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 영운동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 금천동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 용담동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 명암동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 산성동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 용암동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 용정동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 방서동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 평촌동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 지북동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 운동동,2020-06-19,2022-09-25
+충청북도 청주시 상당구 월오동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 사직동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 사창동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 모충동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 산남동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 미평동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 분평동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 수곡동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 성화동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 개신동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 죽림동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 장성동,2020-06-19,2022-09-25
+충청북도 청주시 서원구 장암동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 운천동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 신봉동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 가경동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 복대동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 봉명동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 송정동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 강서동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 석곡동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 휴암동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 신전동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 현암동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 동막동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 수의동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 지동동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 서촌동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 신성동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 평동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 신대동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 남촌동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 내곡동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 상신동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 원평동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 문암동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 송절동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 화계동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 외북동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 향정동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 비하동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 석소동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 정봉동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 신촌동,2020-06-19,2022-09-25
+충청북도 청주시 흥덕구 오송읍,2020-06-19,2022-09-25
+충청북도 청주시 청원구 우암동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 내덕동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 율량동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 사천동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 주성동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 주중동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 정상동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 정하동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 정북동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 오동동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 외남동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 외평동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 외하동,2020-06-19,2022-09-25
+충청북도 청주시 청원구 오창읍,2020-06-19,2022-09-25
+충청남도 천안시 동남구 대흥동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 성황동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 문화동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 사직동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 영성동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 오룡동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 원성동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 구성동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 청수동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 삼룡동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 청당동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 유량동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 봉명동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 다가동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 용곡동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 신방동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 쌍용동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 신부동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 안서동,2020-12-18,2022-09-25
+충청남도 천안시 동남구 구룡동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 와촌동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 성정동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 백석동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 두정동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 성성동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 차암동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 쌍용동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 불당동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 업성동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 신당동,2020-12-18,2022-09-25
+충청남도 천안시 서북구 부대동,2020-12-18,2022-09-25
+충청남도 공주시 반죽동,2020-12-18,2022-09-25
+충청남도 공주시 봉황동,2020-12-18,2022-09-25
+충청남도 공주시 중학동,2020-12-18,2022-09-25
+충청남도 공주시 중동,2020-12-18,2022-09-25
+충청남도 공주시 산성동,2020-12-18,2022-09-25
+충청남도 공주시 교동,2020-12-18,2022-09-25
+충청남도 공주시 웅진동,2020-12-18,2022-09-25
+충청남도 공주시 금성동,2020-12-18,2022-09-25
+충청남도 공주시 옥룡동,2020-12-18,2022-09-25
+충청남도 공주시 금학동,2020-12-18,2022-09-25
+충청남도 공주시 봉정동,2020-12-18,2022-09-25
+충청남도 공주시 주미동,2020-12-18,2022-09-25
+충청남도 공주시 태봉동,2020-12-18,2022-09-25
+충청남도 공주시 오곡동,2020-12-18,2022-09-25
+충청남도 공주시 신기동,2020-12-18,2022-09-25
+충청남도 공주시 소학동,2020-12-18,2022-09-25
+충청남도 공주시 상왕동,2020-12-18,2022-09-25
+충청남도 공주시 무릉동,2020-12-18,2022-09-25
+충청남도 공주시 월송동,2020-12-18,2022-09-25
+충청남도 공주시 신관동,2020-12-18,2022-09-25
+충청남도 공주시 금흥동,2020-12-18,2022-09-25
+충청남도 공주시 쌍신동,2020-12-18,2022-09-25
+충청남도 공주시 월미동,2020-12-18,2022-09-25
+충청남도 공주시 검상동,2020-12-18,2022-09-25
+충청남도 공주시 석장리동,2020-12-18,2022-09-25
+충청남도 공주시 송선동,2020-12-18,2022-09-25
+충청남도 공주시 동현동,2020-12-18,2022-09-25
+충청남도 논산시 화지동,2020-12-18,2022-09-25
+충청남도 논산시 반월동,2020-12-18,2022-09-25
+충청남도 논산시 대교동,2020-12-18,2022-09-25
+충청남도 논산시 부창동,2020-12-18,2022-09-25
+충청남도 논산시 취암동,2020-12-18,2022-09-25
+충청남도 논산시 등화동,2020-12-18,2022-09-25
+충청남도 논산시 지산동,2020-12-18,2022-09-25
+충청남도 논산시 덕지동,2020-12-18,2022-09-25
+충청남도 논산시 내동,2020-12-18,2022-09-25
+충청남도 논산시 강산동,2020-12-18,2022-09-25
+충청남도 논산시 관촉동,2020-12-18,2022-09-25
+전라북도 전주시 완산구,2020-12-18,2022-09-25
+전라북도 전주시 덕진구,2020-12-18,2022-09-25
+전라남도 여수시 종화동,2020-12-18,2022-07-04
+전라남도 여수시 수정동,2020-12-18,2022-07-04
+전라남도 여수시 공화동,2020-12-18,2022-07-04
+전라남도 여수시 관문동,2020-12-18,2022-07-04
+전라남도 여수시 고소동,2020-12-18,2022-07-04
+전라남도 여수시 동산동,2020-12-18,2022-07-04
+전라남도 여수시 중앙동,2020-12-18,2022-07-04
+전라남도 여수시 교동,2020-12-18,2022-07-04
+전라남도 여수시 군자동,2020-12-18,2022-07-04
+전라남도 여수시 충무동,2020-12-18,2022-07-04
+전라남도 여수시 연등동,2020-12-18,2022-07-04
+전라남도 여수시 광무동,2020-12-18,2022-07-04
+전라남도 여수시 서교동,2020-12-18,2022-07-04
+전라남도 여수시 봉강동,2020-12-18,2022-07-04
+전라남도 여수시 봉산동,2020-12-18,2022-07-04
+전라남도 여수시 남산동,2020-12-18,2022-07-04
+전라남도 여수시 국동,2020-12-18,2022-07-04
+전라남도 여수시 신월동,2020-12-18,2022-07-04
+전라남도 여수시 여서동,2020-12-18,2022-07-04
+전라남도 여수시 문수동,2020-12-18,2022-07-04
+전라남도 여수시 오림동,2020-12-18,2022-07-04
+전라남도 여수시 미평동,2020-12-18,2022-07-04
+전라남도 여수시 둔덕동,2020-12-18,2022-07-04
+전라남도 여수시 오천동,2020-12-18,2022-07-04
+전라남도 여수시 만흥동,2020-12-18,2022-07-04
+전라남도 여수시 덕충동,2020-12-18,2022-07-04
+전라남도 여수시 경호동,2020-12-18,2022-07-04
+전라남도 여수시 학동,2020-12-18,2022-07-04
+전라남도 여수시 학용동,2020-12-18,2022-07-04
+전라남도 여수시 안산동,2020-12-18,2022-07-04
+전라남도 여수시 소호동,2020-12-18,2022-07-04
+전라남도 여수시 시전동,2020-12-18,2022-07-04
+전라남도 여수시 신기동,2020-12-18,2022-07-04
+전라남도 여수시 웅천동,2020-12-18,2022-07-04
+전라남도 여수시 선원동,2020-12-18,2022-07-04
+전라남도 여수시 여천동,2020-12-18,2022-07-04
+전라남도 여수시 화장동,2020-12-18,2022-07-04
+전라남도 여수시 주삼동,2020-12-18,2022-07-04
+전라남도 여수시 봉계동,2020-12-18,2022-07-04
+전라남도 여수시 해산동,2020-12-18,2022-07-04
+전라남도 여수시 화치동,2020-12-18,2022-07-04
+전라남도 여수시 월하동,2020-12-18,2022-07-04
+전라남도 여수시 평여동,2020-12-18,2022-07-04
+전라남도 여수시 중흥동,2020-12-18,2022-07-04
+전라남도 여수시 적량동,2020-12-18,2022-07-04
+전라남도 여수시 월내동,2020-12-18,2022-07-04
+전라남도 여수시 묘도동,2020-12-18,2022-07-04
+전라남도 여수시 낙포동,2020-12-18,2022-07-04
+전라남도 여수시 신덕동,2020-12-18,2022-07-04
+전라남도 여수시 상암동,2020-12-18,2022-07-04
+전라남도 여수시 호명동,2020-12-18,2022-07-04
+전라남도 여수시 소라면,2020-12-18,2022-07-04
+전라남도 순천시 삼거동,2020-12-18,2022-07-04
+전라남도 순천시 와룡동,2020-12-18,2022-07-04
+전라남도 순천시 영동,2020-12-18,2022-07-04
+전라남도 순천시 옥천동,2020-12-18,2022-07-04
+전라남도 순천시 행동,2020-12-18,2022-07-04
+전라남도 순천시 금곡동,2020-12-18,2022-07-04
+전라남도 순천시 매곡동,2020-12-18,2022-07-04
+전라남도 순천시 석현동,2020-12-18,2022-07-04
+전라남도 순천시 가곡동,2020-12-18,2022-07-04
+전라남도 순천시 용당동,2020-12-18,2022-07-04
+전라남도 순천시 조곡동,2020-12-18,2022-07-04
+전라남도 순천시 생목동,2020-12-18,2022-07-04
+전라남도 순천시 덕암동,2020-12-18,2022-07-04
+전라남도 순천시 연향동,2020-12-18,2022-07-04
+전라남도 순천시 풍덕동,2020-12-18,2022-07-04
+전라남도 순천시 남정동,2020-12-18,2022-07-04
+전라남도 순천시 인제동,2020-12-18,2022-07-04
+전라남도 순천시 저전동,2020-12-18,2022-07-04
+전라남도 순천시 장천동,2020-12-18,2022-07-04
+전라남도 순천시 남내동,2020-12-18,2022-07-04
+전라남도 순천시 중앙동,2020-12-18,2022-07-04
+전라남도 순천시 동외동,2020-12-18,2022-07-04
+전라남도 순천시 교량동,2020-12-18,2022-07-04
+전라남도 순천시 대룡동,2020-12-18,2022-07-04
+전라남도 순천시 홍내동,2020-12-18,2022-07-04
+전라남도 순천시 오천동,2020-12-18,2022-07-04
+전라남도 순천시 덕월동,2020-12-18,2022-07-04
+전라남도 순천시 야흥동,2020-12-18,2022-07-04
+전라남도 순천시 인월동,2020-12-18,2022-07-04
+전라남도 순천시 안풍동,2020-12-18,2022-07-04
+전라남도 순천시 대대동,2020-12-18,2022-07-04
+전라남도 순천시 왕지동,2020-12-18,2022-07-04
+전라남도 순천시 조례동,2020-12-18,2022-07-04
+전라남도 순천시 해룡면,2020-12-18,2022-07-04
+전라남도 순천시 서면,2020-12-18,2022-07-04
+전라남도 광양시 황금동,2020-12-18,2022-07-04
+전라남도 광양시 황길동,2020-12-18,2022-07-04
+전라남도 광양시 도이동,2020-12-18,2022-07-04
+전라남도 광양시 성황동,2020-12-18,2022-07-04
+전라남도 광양시 중군동,2020-12-18,2022-07-04
+전라남도 광양시 중동,2020-12-18,2022-07-04
+전라남도 광양시 마동,2020-12-18,2022-07-04
+전라남도 광양시 광영동,2020-12-18,2022-07-04
+전라남도 광양시 태인동,2020-12-18,2022-07-04
+전라남도 광양시 금호동,2020-12-18,2022-07-04
+전라남도 광양시 광양읍,2020-12-18,2022-07-04
+경상북도 포항시 남구 상도동,2020-12-18,2022-09-25
+경상북도 포항시 남구 대도동,2020-12-18,2022-09-25
+경상북도 포항시 남구 해도동,2020-12-18,2022-09-25
+경상북도 포항시 남구 송도동,2020-12-18,2022-09-25
+경상북도 포항시 남구 청림동,2020-12-18,2022-09-25
+경상북도 포항시 남구 일월동,2020-12-18,2022-09-25
+경상북도 포항시 남구 송정동,2020-12-18,2022-09-25
+경상북도 포항시 남구 송내동,2020-12-18,2022-09-25
+경상북도 포항시 남구 괴동동,2020-12-18,2022-09-25
+경상북도 포항시 남구 동촌동,2020-12-18,2022-09-25
+경상북도 포항시 남구 장흥동,2020-12-18,2022-09-25
+경상북도 포항시 남구 인덕동,2020-12-18,2022-09-25
+경상북도 포항시 남구 호동,2020-12-18,2022-09-25
+경상북도 포항시 남구 효자동,2020-12-18,2022-09-25
+경상북도 포항시 남구 지곡동,2020-12-18,2022-09-25
+경상북도 포항시 남구 대잠동,2020-12-18,2022-09-25
+경상북도 포항시 남구 이동,2020-12-18,2022-09-25
+경상북도 경산시 삼남동,2020-12-18,2022-07-04
+경상북도 경산시 삼북동,2020-12-18,2022-07-04
+경상북도 경산시 서상동,2020-12-18,2022-07-04
+경상북도 경산시 신교동,2020-12-18,2022-07-04
+경상북도 경산시 상방동,2020-12-18,2022-07-04
+경상북도 경산시 백천동,2020-12-18,2022-07-04
+경상북도 경산시 옥곡동,2020-12-18,2022-07-04
+경상북도 경산시 사정동,2020-12-18,2022-07-04
+경상북도 경산시 옥산동,2020-12-18,2022-07-04
+경상북도 경산시 중산동,2020-12-18,2022-07-04
+경상북도 경산시 정평동,2020-12-18,2022-07-04
+경상북도 경산시 대평동,2020-12-18,2022-07-04
+경상북도 경산시 대정동,2020-12-18,2022-07-04
+경상북도 경산시 임당동,2020-12-18,2022-07-04
+경상북도 경산시 대동,2020-12-18,2022-07-04
+경상북도 경산시 계양동,2020-12-18,2022-07-04
+경상북도 경산시 중방동,2020-12-18,2022-07-04
+경상북도 경산시 조영동,2020-12-18,2022-07-04
+경상북도 경산시 남방동,2020-12-18,2022-07-04
+경상북도 경산시 내동,2020-12-18,2022-07-04
+경상북도 경산시 여천동,2020-12-18,2022-07-04
+경상북도 경산시 유곡동,2020-12-18,2022-07-04
+경상북도 경산시 신천동,2020-12-18,2022-07-04
+경상북도 경산시 점촌동,2020-12-18,2022-07-04
+경상북도 경산시 평산동,2020-12-18,2022-07-04
+경상북도 경산시 사동,2020-12-18,2022-07-04
+경상북도 경산시 삼풍동,2020-12-18,2022-07-04
+경상북도 경산시 갑제동,2020-12-18,2022-07-04
+경상남도 창원시 성산구 토월동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 사파정동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 가음정동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 외동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 대방동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 남산동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 삼정자동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 천선동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 불모산동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 안민동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 내동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 남지동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 상복동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 완암동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 창곡동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 월림동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 적현동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 양곡동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 반송동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 귀산동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 귀곡동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 귀현동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 신촌동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 반지동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 중앙동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 반림동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 상남동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 성주동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 웅남동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 사파동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 가음동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 성산동,2020-12-18,2022-09-25
+경상남도 창원시 성산구 남양동,2020-12-18,2022-09-25
+전북특별자치도 전주시 완산구,2020-12-18,2022-09-25
+전북특별자치도 전주시 덕진구,2020-12-18,2022-09-25
+`;
+
+// DB 구축
+function buildDB(csv) {
+  const db = {};
+  csv.split('\n').forEach((line, i) => {
+    if (i === 0) return;
+    const cols = line.trim().replace(/\r/g,'').split(',');
+    if (cols.length < 2 || !cols[0] || !cols[1]) return;
+    const [region, start, end] = cols.map(s => s.trim());
+    if (!db[region]) db[region] = [];
+    db[region].push({ start, end: end || '9999-12-31' });
+  });
+  return db;
+}
+const DB = buildDB(rawCsvData);
+
+// 지역 목록 (가나다 정렬)
+const REGIONS = Object.keys(DB).sort();
+
+window.onload = () => {
+  // 외부 클릭 시 드롭다운 닫기
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.autocomplete-wrap')) closeAcList();
+  });
+  // 날짜 셀렉터 초기화
+  initDatePickers();
+};
+
+function initDatePickers() {
+  const now = new Date();
+  const curY = now.getFullYear();
+
+  ['acq', 'sale'].forEach(prefix => {
+    const yEl = document.getElementById(prefix + 'Y');
+    const mEl = document.getElementById(prefix + 'M');
+    const dEl = document.getElementById(prefix + 'D');
+
+    // 연도: 1990 ~ 현재년도
+    for (let y = curY; y >= 1990; y--) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y + '년';
+      yEl.appendChild(o);
+    }
+    // 월: 1~12
+    for (let m = 1; m <= 12; m++) {
+      const o = document.createElement('option');
+      o.value = String(m).padStart(2,'0'); o.textContent = m + '월';
+      mEl.appendChild(o);
+    }
+    // 일: 초기 1~31 (월 선택 시 동적 변경)
+    fillDays(dEl, curY, 1);
+  });
+}
+
+function fillDays(dEl, year, month) {
+  const cur = dEl.value;
+  const days = new Date(year, month, 0).getDate(); // 해당 월의 마지막 날
+  dEl.innerHTML = '<option value="">일</option>';
+  for (let d = 1; d <= days; d++) {
+    const o = document.createElement('option');
+    o.value = String(d).padStart(2,'0'); o.textContent = d + '일';
+    if (String(d).padStart(2,'0') === cur) o.selected = true;
+    dEl.appendChild(o);
+  }
+}
+
+function syncDate(prefix) {
+  const y = document.getElementById(prefix + 'Y').value;
+  const m = document.getElementById(prefix + 'M').value;
+  const dEl = document.getElementById(prefix + 'D');
+
+  // 월/년 바뀌면 일 목록 갱신
+  if (y && m) fillDays(dEl, +y, +m);
+
+  const d = dEl.value;
+  const hidden = document.getElementById(prefix + 'Date');
+  hidden.value = (y && m && d) ? `${y}-${m}-${d}` : '';
+
+  // 소재지 뱃지 취득일 연동
+  if (prefix === 'acq') updateBadge();
+}
+
+function openAcList(items, q) {
+  const list = document.getElementById('ac-list');
+  list.innerHTML = '';
+  // 최대 100개 표시
+  items.slice(0, 100).forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'ac-item';
+    // 매칭 글자 강조
+    if (q && q.length > 0) {
+      const idx = r.indexOf(q);
+      div.innerHTML = idx >= 0
+        ? escHtml(r.slice(0, idx)) + '<mark>' + escHtml(r.slice(idx, idx + q.length)) + '</mark>' + escHtml(r.slice(idx + q.length))
+        : escHtml(r);
+    } else {
+      div.textContent = r;
+    }
+    div.addEventListener('mousedown', e => { e.preventDefault(); selectRegion(r); });
+    div.addEventListener('touchend',  e => { e.preventDefault(); selectRegion(r); });
+    list.appendChild(div);
+  });
+  list.classList.toggle('open', items.length > 0);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function closeAcList() {
+  document.getElementById('ac-list').classList.remove('open');
+}
+
+function selectRegion(r) {
+  document.getElementById('region').value = r;
+  closeAcList();
+  updateBadge(); // 드롭다운 재오픈 없이 뱃지만 갱신
+}
+
+// 타이핑 시 호출 — 드롭다운 + 뱃지 둘 다
+function onRegionInput() {
+  const q = document.getElementById('region').value.trim();
+
+  // 드롭다운: 빈칸이면 전체, 입력 시 포함 검색
+  if (q.length === 0) {
+    openAcList(REGIONS.slice(0, 80), q);
+  } else {
+    openAcList(REGIONS.filter(r => r.includes(q)), q);
+  }
+
+  updateBadge();
+}
+
+// 뱃지만 갱신 (드롭다운 건드리지 않음)
+function updateBadge() {
+  const q = document.getElementById('region').value.trim();
+  const acqDate = document.getElementById('acqDate').value;
+  const wrap = document.getElementById('region-badge-wrap');
+  wrap.innerHTML = '';
+  if (!q || !acqDate) return;
+  const exactMatch = REGIONS.find(r => r === q) || REGIONS.find(r => r.includes(q) || q.includes(r));
+  if (!exactMatch) return;
+  const result = checkRegulated(exactMatch, acqDate);
+  if (!result) return;
+  if (result.isRegulated) {
+    const endTxt = result.end ? ` ~ ${fmtDate(result.end)} 해제` : ' ~ 현재 유지';
+    wrap.innerHTML = `<div class="region-badge badge-reg">🚨 조정대상지역 (${fmtDate(result.start)}${endTxt})</div>`;
+  } else {
+    wrap.innerHTML = `<div class="region-badge badge-norm">✅ 비규제지역</div>`;
+  }
+}
+
+// 조정지역 판정
+function checkRegulated(regionName, dateStr) {
+  if (!regionName || !dateStr) return null;
+  // 날짜 직접 파싱 (timezone 이슈 방지)
+  const [ty, tm, td] = dateStr.split('-').map(Number);
+  const t = new Date(ty, tm - 1, td);
+  if (isNaN(t)) return null;
+
+  // 1순위: 정확 일치
+  let history = DB[regionName];
+
+  // 2순위: DB 키가 입력값을 포함 (예: "반곡동" → "세종특별자치시 반곡동")
+  if (!history) {
+    const key = Object.keys(DB).find(k => k === regionName);
+    if (key) history = DB[key];
+  }
+  // 3순위: 입력값이 DB 키를 포함하거나 DB 키가 입력값을 포함
+  if (!history) {
+    const keys = Object.keys(DB).filter(k => k.includes(regionName) || regionName.includes(k));
+    // 더 구체적인(긴) 키 우선
+    keys.sort((a, b) => b.length - a.length);
+    if (keys.length > 0) history = DB[keys[0]];
+  }
+
+  if (!history) return { isRegulated: false };
+
+  for (const r of history) {
+    const [sy, sm, sd] = r.start.split('-').map(Number);
+    const [ey, em, ed] = r.end.split('-').map(Number);
+    const s = new Date(sy, sm - 1, sd);
+    const e = new Date(ey, em - 1, ed);
+    if (t >= s && t <= e) {
+      return { isRegulated: true, start: r.start, end: r.end === '9999-12-31' ? null : r.end };
+    }
+  }
+  return { isRegulated: false };
+}
+
+// ── 유틸 ──
+// 토스뱅크 방식: 1,000만 원 / 1억 2,345만 원
+function fmt(n) {
+  if (n === null || n === undefined || isNaN(n)) return '-';
+  n = Math.round(n);
+  if (n === 0) return '0원';
+  const uk  = Math.floor(n / 1e8);          // 억
+  const man = Math.floor((n % 1e8) / 1e4);  // 만
+  const won = n % 1e4;                       // 원 미만 (필요 시)
+  let result = '';
+  if (uk  > 0) result += uk.toLocaleString('ko-KR') + '억 ';
+  if (man > 0) result += man.toLocaleString('ko-KR') + '만 ';
+  // 억·만 단위로 딱 떨어지지 않는 나머지(원 단위)는 무시 (세금 계산상 반올림)
+  return result.trim() + ' 원';
+}
+// 입력 미리보기용 (약 표시)
+function fmtShort(n) {
+  if (!n || isNaN(n) || n <= 0) return '';
+  n = Math.round(n);
+  const uk  = Math.floor(n / 1e8);
+  const man = Math.floor((n % 1e8) / 1e4);
+  let result = '약 ';
+  if (uk  > 0) result += uk.toLocaleString('ko-KR') + '억 ';
+  if (man > 0) result += man.toLocaleString('ko-KR') + '만 ';
+  return result.trim() + ' 원';
+}
+function fmtDate(str) {
+  // "2022-08-02" → "2022년 8월 2일"
+  if (!str) return '';
+  const [y, m, d] = str.split('-');
+  return `${y}년 ${+m}월 ${+d}일`;
+}
+function previewAmt(inputId, previewId) {
+  const v = +document.getElementById(inputId).value;
+  document.getElementById(previewId).textContent = fmtShort(v * 10000);
+}
+
+
+
+// ── 위자드 상태 ──
+let currentStep = 1;
+const TOTAL = 5;
+let selectedHouse = 1;
+
+function selectHouse(n) {
+  selectedHouse = n;
+  document.querySelectorAll('.house-tab').forEach((t, i) => t.classList.toggle('active', i+1 === n));
+  const hints = [
+    '1세대 1주택 비과세 요건을 검토합니다',
+    '일시적 2주택 특례는 별도 적용됩니다',
+    '조정지역은 중과세율이 적용됩니다'
+  ];
+  document.getElementById('house-hint').textContent = hints[n-1];
+}
+
+function updateIndicator(step) {
+  for (let i = 1; i <= TOTAL; i++) {
+    const dot = document.getElementById('sd' + i);
+    if (i < step)       { dot.className = 'step-dot done'; dot.textContent = '✓'; }
+    else if (i === step){ dot.className = 'step-dot active'; dot.textContent = i; }
+    else                { dot.className = 'step-dot'; dot.textContent = i; }
+    if (i < TOTAL) {
+      document.getElementById('sl' + i).className = 'step-line' + (i < step ? ' done' : '');
+    }
+  }
+  document.getElementById('btn-back').style.display = step > 1 ? 'block' : 'none';
+  document.getElementById('btn-next').textContent = step === TOTAL ? '계산하기' : '다음';
+}
+
+function showErr(stepN, msg) {
+  const el = document.getElementById('err' + stepN);
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+function validateStep(step) {
+  if (step === 1) {
+    if (!document.getElementById('region').value.trim()) { showErr(1, '소재지를 입력하세요.'); return false; }
+    return true;
+  }
+  if (step === 2) {
+    if (!document.getElementById('acqDate').value) { showErr(2, '취득일자를 입력하세요.'); return false; }
+    if (!document.getElementById('acqPrice').value || +document.getElementById('acqPrice').value <= 0) { showErr(2, '실지취득가액을 입력하세요.'); return false; }
+    return true;
+  }
+  if (step === 3) {
+    const acq = document.getElementById('acqDate').value;
+    const sale = document.getElementById('saleDate').value;
+    if (!sale) { showErr(3, '양도일자를 입력하세요.'); return false; }
+    if (!document.getElementById('salePrice').value || +document.getElementById('salePrice').value <= 0) { showErr(3, '실지양도가액을 입력하세요.'); return false; }
+    if (acq && sale && new Date(sale) <= new Date(acq)) { showErr(3, '양도일자는 취득일자 이후여야 합니다.'); return false; }
+    return true;
+  }
+  return true; // 4, 5는 항상 통과
+}
+
+function nextStep() {
+  if (!validateStep(currentStep)) return;
+  if (currentStep === TOTAL) { calculate(); return; }
+
+  document.getElementById('step' + currentStep).classList.remove('active');
+  currentStep++;
+  document.getElementById('step' + currentStep).classList.add('active');
+
+  // 스텝 1 → 2 넘어갈 때 취득일 기준으로 뱃지 업데이트
+  if (currentStep === 2) {
+    document.getElementById('acqDate').addEventListener('change', updateBadge, { once: false });
+  }
+
+  updateIndicator(currentStep);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevStep() {
+  if (currentStep <= 1) return;
+  document.getElementById('step' + currentStep).classList.remove('active');
+  currentStep--;
+  document.getElementById('step' + currentStep).classList.add('active');
+  updateIndicator(currentStep);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// 세율 계산
+// ============================================================
+const BRACKETS = [
+  { lim: 14_000_000,    rate: 0.06, ded: 0 },
+  { lim: 50_000_000,    rate: 0.15, ded: 1_080_000 },
+  { lim: 88_000_000,    rate: 0.24, ded: 5_220_000 },
+  { lim: 150_000_000,   rate: 0.35, ded: 14_900_000 },
+  { lim: 300_000_000,   rate: 0.38, ded: 19_400_000 },
+  { lim: 500_000_000,   rate: 0.40, ded: 25_400_000 },
+  { lim: 1_000_000_000, rate: 0.42, ded: 35_400_000 },
+  { lim: Infinity,      rate: 0.45, ded: 65_400_000 },
+];
+function progTax(base) {
+  if (base <= 0) return 0;
+  for (const b of BRACKETS) if (base <= b.lim) return base * b.rate - b.ded;
+  return base * 0.45 - 65_400_000;
+}
+
+// 보유기간(개월) — 날짜 문자열 안전 파싱
+function getHoldMonths(acqStr, saleStr) {
+  const [ay, am] = acqStr.split('-').map(Number);
+  const [sy, sm] = saleStr.split('-').map(Number);
+  return (sy - ay) * 12 + (sm - am);
+}
+
+// 장기보유특별공제
+function getLthdRate(holdM, resideM, houseN, isReg) {
+  const hy = Math.floor(holdM / 12);
+  if (hy < 3) return { hr: 0, rr: 0 };
+  if (houseN === 1) {
+    if (isReg) {
+      return { hr: Math.min(hy * 0.04, 0.40), rr: Math.min(Math.floor(resideM/12) * 0.04, 0.40) };
+    }
+    return { hr: Math.min(hy * 0.08, 0.80), rr: 0 };
+  }
+  return { hr: Math.min(hy * 0.02, 0.20), rr: 0 };
+}
+
+// 케이스 계산
+function calcCase(gain, salePrice, holdM, resideM, houseN, isReg) {
+  if (gain <= 0) return { exempt: false, taxAmount: 0, localTax: 0, totalTax: 0, taxGain: 0, lthd: 0, lthdRate: 0, base: 0, note: '양도차익 없음' };
+
+  const hy = Math.floor(holdM / 12);
+
+  if (houseN === 1) {
+    const has2Hold   = holdM >= 24;
+    const has2Reside = resideM >= 24;
+    const meetsExempt = has2Hold && (!isReg || has2Reside);
+
+    if (meetsExempt) {
+      if (salePrice <= 1_200_000_000) {
+        return { exempt: true, taxAmount: 0, localTax: 0, totalTax: 0, note: '1세대1주택 비과세 전액' };
+      }
+      // 고가주택
+      const taxGain = gain * (salePrice - 1_200_000_000) / salePrice;
+      const { hr, rr } = getLthdRate(holdM, resideM, 1, isReg);
+      const lthdRate = hr + rr;
+      const lthd = taxGain * lthdRate;
+      const base = Math.max(taxGain - lthd - 2_500_000, 0);
+      const tax = progTax(base);
+      return { exempt: false, isHighPrice: true, taxGain, lthdRate, hr, rr, lthd, base, taxAmount: tax, localTax: tax*0.1, totalTax: tax*1.1, note: '1세대1주택 고가주택 (12억 초과분 과세)' };
+    }
+
+    // 비과세 미충족
+    if (holdM < 12) {
+      const tax = gain * 0.70;
+      return { exempt: false, taxGain: gain, lthdRate: 0, lthd: 0, base: gain, taxAmount: tax, localTax: tax*0.1, totalTax: tax*1.1, specialRate: 70, note: '1년 미만 단기양도세율 70%' };
+    }
+    if (holdM < 24) {
+      const tax = gain * 0.60;
+      return { exempt: false, taxGain: gain, lthdRate: 0, lthd: 0, base: gain, taxAmount: tax, localTax: tax*0.1, totalTax: tax*1.1, specialRate: 60, note: '1~2년 미만 단기양도세율 60%' };
+    }
+    // 2년 이상, 조정 거주 미충족
+    const { hr, rr } = getLthdRate(holdM, resideM, 1, isReg);
+    const lthdRate = hr + rr;
+    const lthd = gain * lthdRate;
+    const base = Math.max(gain - lthd - 2_500_000, 0);
+    const tax = progTax(base);
+    return { exempt: false, taxGain: gain, lthdRate, hr, rr, lthd, base, taxAmount: tax, localTax: tax*0.1, totalTax: tax*1.1, note: isReg ? '조정지역 거주요건 미충족 (일반세율)' : '일반세율' };
+  }
+
+  // 2·3주택
+  if (holdM < 12) { const tax = gain*0.70; return { exempt:false, taxGain:gain, lthdRate:0, lthd:0, base:gain, taxAmount:tax, localTax:tax*0.1, totalTax:tax*1.1, specialRate:70, note:'1년 미만 단기양도세율 70%' }; }
+  if (holdM < 24) { const tax = gain*0.60; return { exempt:false, taxGain:gain, lthdRate:0, lthd:0, base:gain, taxAmount:tax, localTax:tax*0.1, totalTax:tax*1.1, specialRate:60, note:'1~2년 미만 단기양도세율 60%' }; }
+
+  if (isReg) {
+    const sur = houseN === 2 ? 0.20 : 0.30;
+    const base = Math.max(gain - 2_500_000, 0);
+    const tax = progTax(base) + base * sur;
+    const label = houseN === 2 ? '2주택 조정지역 중과 (+20%p)' : '3주택 이상 조정지역 중과 (+30%p)';
+    return { exempt:false, taxGain:gain, lthdRate:0, lthd:0, base, taxAmount:tax, localTax:tax*0.1, totalTax:tax*1.1, surcharge:sur*100, note:label };
+  }
+  const { hr } = getLthdRate(holdM, resideM, houseN, false);
+  const lthd = gain * hr;
+  const base = Math.max(gain - lthd - 2_500_000, 0);
+  const tax = progTax(base);
+  const label = houseN === 2 ? '2주택 일반지역 기본세율' : '3주택 이상 일반지역 기본세율';
+  return { exempt:false, taxGain:gain, lthdRate:hr, lthd, base, taxAmount:tax, localTax:tax*0.1, totalTax:tax*1.1, note:label };
+}
+
+// ============================================================
+// 메인 계산
+// ============================================================
+function calculate() {
+  const region     = document.getElementById('region').value.trim();
+  const acqDate    = document.getElementById('acqDate').value;
+  const acqPrice   = +document.getElementById('acqPrice').value * 10000;
+  const saleDate   = document.getElementById('saleDate').value;
+  const salePrice  = +document.getElementById('salePrice').value * 10000;
+  const resideYear  = +document.getElementById('resideYear').value || 0;
+  const resideMonth = +document.getElementById('resideMonth').value || 0;
+  const resideMonths = resideYear * 12 + resideMonth;
+
+  const regulated = checkRegulated(region, acqDate);
+  const isReg = regulated ? regulated.isRegulated : false;
+
+  // 보유기간 — 문자열 직접 파싱
+  const holdM  = getHoldMonths(acqDate, saleDate);
+  const holdY  = Math.floor(holdM / 12);
+  const holdMr = holdM % 12;
+  const gain   = salePrice - acqPrice;
+
+  renderResult({ region, acqDate, saleDate, acqPrice, salePrice, resideMonths, holdM, holdY, holdMr, isReg, regulated, gain, houseN: selectedHouse });
+}
+
+// ============================================================
+// 결과 렌더링
+// ============================================================
+function renderResult(p) {
+  document.getElementById('wizard-section').style.display = 'none';
+  document.getElementById('result-section').style.display = 'block';
+
+  const holdStr   = `${p.holdY}년. ${p.holdMr}개월.`;
+  const resideY   = Math.floor(p.resideMonths / 12);
+  const resideM   = p.resideMonths % 12;
+  const resideStr = `${resideY}년. ${resideM}개월.`;
+  const regLabel  = p.isReg ? '🚨 조정대상지역' : '✅ 비규제지역';
+
+  const r = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, p.isReg);
+
+  let html = '';
+
+  // 요약
+  if (r.exempt) {
+    html += `<div class="summary-card free">
+      <div class="sc-label">양도소득세</div>
+      <div class="sc-amount">비과세</div>
+      <div class="sc-note">1세대 1주택 비과세 요건 충족 — 세금 없음</div>
+    </div>`;
+  } else {
+    html += `<div class="summary-card tax">
+      <div class="sc-label">납부 예상 세액 (본세 + 지방소득세)</div>
+      <div class="sc-amount">${fmt(r.totalTax)}</div>
+      <div class="sc-note">${r.note}</div>
+      <div class="sc-row"><span>양도소득세 본세</span><span>${fmt(r.taxAmount)}</span></div>
+      <div class="sc-row"><span>지방소득세 (본세 × 10%)</span><span>${fmt(r.localTax)}</span></div>
+    </div>`;
+  }
+
+  // 기본 정보
+  html += `<div class="rcard">
+    <div class="rcard-title">기본 정보</div>
+    <div class="calc-row"><span class="cl">소재지</span><span class="cv">${p.region}</span></div>
+    <div class="calc-row"><span class="cl">규제지역</span><span class="cv">${regLabel}</span></div>
+    <div class="calc-row"><span class="cl">취득일</span><span class="cv">${fmtDate(p.acqDate)}</span></div>
+    <div class="calc-row"><span class="cl">양도일</span><span class="cv">${fmtDate(p.saleDate)}</span></div>
+    <div class="calc-row"><span class="cl">보유기간</span><span class="cv blue">${holdStr}</span></div>
+    <div class="calc-row"><span class="cl">거주기간</span><span class="cv">${resideStr}</span></div>
+    <div class="calc-row"><span class="cl">보유 주택 수</span><span class="cv">${p.houseN === 3 ? '3주택 이상' : p.houseN + '주택'}</span></div>
+  </div>`;
+
+  // 계산 상세
+  if (!r.exempt) {
+    html += `<div class="rcard"><div class="rcard-title">계산 상세</div>`;
+    html += `<div class="calc-row"><span class="cl">실지양도가액</span><span class="cv">${fmt(p.salePrice)}</span></div>`;
+    html += `<div class="calc-row"><span class="cl">실지취득가액</span><span class="cv red">- ${fmt(p.acqPrice)}</span></div>`;
+    html += `<div class="calc-row total"><span class="cl">양도차익</span><span class="cv blue">${fmt(p.gain)}</span></div>`;
+
+    if (r.isHighPrice) {
+      html += `<div class="calc-row"><span class="cl">고가주택 과세 양도차익<br><span style="font-size:11px;color:#8b95a1">(양도가 - 12억) ÷ 양도가 비율 적용</span></span><span class="cv">${fmt(r.taxGain)}</span></div>`;
+    }
+
+    if (r.lthdRate > 0) {
+      const rateLabel = r.rr > 0
+        ? `장기보유특별공제 (보유 ${Math.round(r.hr*100)}% + 거주 ${Math.round(r.rr*100)}%)`
+        : `장기보유특별공제 (${Math.round(r.lthdRate*100)}%)`;
+      html += `<div class="calc-row"><span class="cl">${rateLabel}</span><span class="cv red">- ${fmt(r.lthd)}</span></div>`;
+    } else if (p.holdM >= 36 && p.houseN > 1 && p.isReg) {
+      html += `<div class="calc-row"><span class="cl">장기보유특별공제</span><span class="cv red">중과로 배제</span></div>`;
+    }
+
+    if (!r.specialRate) {
+      html += `<div class="calc-row"><span class="cl">기본공제</span><span class="cv red">- ${fmt(2_500_000)}</span></div>`;
+      html += `<div class="calc-row total"><span class="cl">과세표준</span><span class="cv">${fmt(r.base)}</span></div>`;
+      if (r.surcharge) html += `<div class="calc-row"><span class="cl">중과 가산세율</span><span class="cv red">+ ${r.surcharge}%p</span></div>`;
+    }
+
+    html += `<div class="calc-row total"><span class="cl">양도소득세 본세</span><span class="cv">${fmt(r.taxAmount)}</span></div>`;
+    html += `<div class="calc-row"><span class="cl">지방소득세 (×10%)</span><span class="cv">${fmt(r.localTax)}</span></div>`;
+    html += `<div class="calc-row total"><span class="cl">최종 납부세액</span><span class="cv blue">${fmt(r.totalTax)}</span></div>`;
+    html += `</div>`;
+  }
+
+  // 1주택 조건별 비교
+  if (p.houseN === 1) {
+    const rN = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, 1, false);
+    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, 1, true);
+    html += `<div class="rcard"><div class="rcard-title">일반지역 vs 조정지역 비교</div>
+      <div class="compare-sub">일반지역 기준</div>
+      <div class="calc-row"><span class="cl">비과세 여부</span><span class="cv ${rN.exempt?'green':'red'}">${rN.exempt?'비과세':'과세'}</span></div>
+      <div class="calc-row"><span class="cl">장기보유특별공제율</span><span class="cv">${rN.exempt?'-':Math.round(rN.lthdRate*100)+'%'}</span></div>
+      <div class="calc-row"><span class="cl">납부세액</span><span class="cv ${rN.exempt?'green':'blue'}">${rN.exempt?'0원':fmt(rN.totalTax)}</span></div>
+      <div class="compare-sub" style="margin-top:16px">조정지역 기준</div>
+      <div class="calc-row"><span class="cl">비과세 여부</span><span class="cv ${rR.exempt?'green':'red'}">${rR.exempt?'비과세':'과세'}</span></div>
+      <div class="calc-row"><span class="cl">장기보유특별공제율</span><span class="cv">${rR.exempt?'-':Math.round(rR.lthdRate*100)+'%'}</span></div>
+      <div class="calc-row"><span class="cl">납부세액</span><span class="cv ${rR.exempt?'green':'red'}">${rR.exempt?'0원':fmt(rR.totalTax)}</span></div>
+    </div>`;
+  }
+
+  // 2·3주택 비교
+  if (p.houseN >= 2) {
+    const rN = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, false);
+    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, true);
+    const sur = p.houseN === 2 ? '+20%p' : '+30%p';
+    html += `<div class="rcard"><div class="rcard-title">일반지역 vs 조정지역 비교</div>
+      <div class="calc-row"><span class="cl">일반지역 납부세액</span><span class="cv blue">${fmt(rN.totalTax)}</span></div>
+      <div class="calc-row"><span class="cl">일반지역 장기보유공제</span><span class="cv">${Math.round(rN.lthdRate*100)}%</span></div>
+      <div class="calc-row"><span class="cl">조정지역 납부세액 (중과)</span><span class="cv red">${fmt(rR.totalTax)}</span></div>
+      <div class="calc-row"><span class="cl">조정지역 중과세율</span><span class="cv red">${sur}</span></div>
+      <div class="calc-row"><span class="cl">조정지역 장기보유공제</span><span class="cv red">배제</span></div>
+    </div>`;
+  }
+
+  // 절세 가이드
+  const tips = [];
+  if (!r.exempt && p.houseN === 1) {
+    if (p.holdM < 24) tips.push(`보유기간 ${24 - p.holdM}개월 추가 시 2년 보유 요건 충족으로 비과세 가능합니다.`);
+    if (p.isReg && p.resideMonths < 24) tips.push(`조정지역은 2년 거주 요건이 추가됩니다. 거주 ${24 - p.resideMonths}개월 더 필요합니다.`);
+    if (p.salePrice > 1_200_000_000) tips.push('고가주택(12억 초과)은 초과분에만 과세됩니다. 12억 이하 양도 시 전액 비과세입니다.');
+    if (p.holdM >= 36 && Math.round((r.lthdRate||0)*100) < 80) tips.push(`보유기간을 늘릴수록 장기보유특별공제율이 높아집니다 (최대 80%).`);
+  }
+  if (!r.exempt && p.houseN >= 2 && p.isReg) tips.push('조정지역 다주택은 중과세율이 적용됩니다. 비조정지역 주택 먼저 양도, 또는 1주택 상태 양도를 검토해보세요.');
+  if (!r.exempt && p.holdM < 36) tips.push('3년 이상 보유 시 장기보유특별공제가 적용되어 세액이 줄어듭니다.');
+
+  if (tips.length) {
+    html += `<div class="rcard"><div class="rcard-title">절세 가이드</div>
+      <div class="guide-box">
+        ${tips.map(t => `<div class="guide-item"><span class="gdot">•</span><span>${t}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('result-body').innerHTML = html;
+  document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetAll() {
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('wizard-section').style.display = 'block';
+  // 입력값 초기화
+  document.getElementById('region').value = '';
+  document.getElementById('region-badge-wrap').innerHTML = '';
+  document.getElementById('ac-list').classList.remove('open');
+  ['acq','sale'].forEach(p => {
+    document.getElementById(p+'Y').value = '';
+    document.getElementById(p+'M').value = '';
+    document.getElementById(p+'D').value = '';
+    document.getElementById(p+'Date').value = '';
+  });
+  document.getElementById('acqPrice').value = '';
+  document.getElementById('acqPreview').textContent = '';
+  document.getElementById('salePrice').value = '';
+  document.getElementById('salePreview').textContent = '';
+  document.getElementById('resideYear').value = '';
+  document.getElementById('resideMonth').value = '';
+  selectedHouse = 1;
+  document.querySelectorAll('.house-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  // 스텝 1로 복귀
+  document.querySelectorAll('.step-page').forEach(p => p.classList.remove('active'));
+  currentStep = 1;
+  document.getElementById('step1').classList.add('active');
+  updateIndicator(1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+  </script>
+
+  <script>
+  // ══════════════ [주택 외] 계산기 로직 (독립 스코프) ══════════════
+  (function(){
+    function numFmt(n) {
+      return Math.round(n).toLocaleString('ko-KR') + '원';
+    }
+    function parseNum(s) {
+      return parseInt((s || '').replace(/[^0-9]/g, '')) || 0;
+    }
+    function addComma(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', function () {
+        const raw = this.value.replace(/[^0-9]/g, '');
+        this.value = raw ? parseInt(raw).toLocaleString('ko-KR') : '';
+      });
+    }
+    ['cAcqPrice', 'trfPrice', 'expense', 'landVal', 'bldgVal'].forEach(addComma);
+
+    document.getElementById('isBldg').addEventListener('change', function () {
+      document.getElementById('bldgSection').style.display = this.checked ? 'block' : 'none';
+    });
+
+    function getHoldYears(aY, aM, aD, tY, tM, tD) {
+      const a = new Date(aY, aM - 1, aD);
+      const b = new Date(tY, tM - 1, tD);
+      let yrs = b.getFullYear() - a.getFullYear();
+      const md = b.getMonth() - a.getMonth();
+      if (md < 0 || (md === 0 && b.getDate() < a.getDate())) yrs--;
+      return yrs;
+    }
+
+    function getLtcRate(years) {
+      if (years < 3) return 0;
+      return Math.min(years * 0.02, 0.30);
+    }
+
+    function getIncomeTax(tb) {
+      const brackets = [
+        { limit: 14000000,   rate: 0.06, deduct: 0 },
+        { limit: 50000000,   rate: 0.15, deduct: 1260000 },
+        { limit: 88000000,   rate: 0.24, deduct: 5760000 },
+        { limit: 150000000,  rate: 0.35, deduct: 15440000 },
+        { limit: 300000000,  rate: 0.38, deduct: 19940000 },
+        { limit: 500000000,  rate: 0.40, deduct: 25940000 },
+        { limit: 1000000000, rate: 0.42, deduct: 35940000 },
+        { limit: Infinity,   rate: 0.45, deduct: 65940000 },
+      ];
+      for (const b of brackets) {
+        if (tb <= b.limit) return { rate: b.rate, deduct: b.deduct, tax: Math.round(tb * b.rate - b.deduct) };
+      }
+    }
+
+    function showErr(msg) {
+      const e = document.getElementById('errMsg');
+      e.textContent = msg;
+      e.style.display = 'block';
+    }
+    function clearErr() {
+      const e = document.getElementById('errMsg');
+      e.textContent = '';
+      e.style.display = 'none';
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', function () {
+      clearErr();
+
+      const aY = parseInt(document.getElementById('cAcqY').value) || 0;
+      const aM = parseInt(document.getElementById('cAcqM').value) || 0;
+      const aD = parseInt(document.getElementById('cAcqD').value) || 0;
+      const tY = parseInt(document.getElementById('trfY').value) || 0;
+      const tM = parseInt(document.getElementById('trfM').value) || 0;
+      const tD = parseInt(document.getElementById('trfD').value) || 0;
+
+      if (!aY || !aM || !aD || !tY || !tM || !tD) {
+        showErr('취득일자와 양도일자를 모두 입력해주세요.');
+        return;
+      }
+      const acqDate = new Date(aY, aM - 1, aD);
+      const trfDate = new Date(tY, tM - 1, tD);
+      if (trfDate <= acqDate) {
+        showErr('양도일자는 취득일자 이후여야 해요.');
+        return;
+      }
+
+      const cAcqPrice = parseNum(document.getElementById('cAcqPrice').value);
+      const trfPrice = parseNum(document.getElementById('trfPrice').value);
+      const expense  = parseNum(document.getElementById('expense').value);
+
+      if (!cAcqPrice || !trfPrice) {
+        showErr('취득가액과 양도가액을 입력해주세요.');
+        return;
+      }
+
+      const holdYears = getHoldYears(aY, aM, aD, tY, tM, tD);
+      const ltcRate   = getLtcRate(holdYears);
+      const gain      = trfPrice - cAcqPrice - expense;
+
+      const rc = document.getElementById('resultCard');
+      rc.style.display = 'block';
+      rc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      document.getElementById('resPeriodBadge').textContent = holdYears + '년 보유';
+      document.getElementById('rPeriodChip').textContent    = holdYears + '년 · ' + Math.round(ltcRate * 100) + '%';
+
+      document.getElementById('r1').textContent = numFmt(trfPrice);
+      document.getElementById('r2').textContent = '-' + numFmt(cAcqPrice);
+      document.getElementById('r3').textContent = '-' + numFmt(expense);
+      document.getElementById('r4').textContent = gain <= 0 ? '0원 (차익 없음)' : numFmt(gain);
+
+      if (gain <= 0) {
+        document.getElementById('r5').textContent  = '-0원';
+        document.getElementById('r7').textContent  = '0원';
+        document.getElementById('rRateChip').textContent = '0%';
+        document.getElementById('r8').textContent  = '0원';
+        document.getElementById('r9').textContent  = '-0원';
+        document.getElementById('r10').textContent = '0원';
+        document.getElementById('r11').textContent = '0원';
+        document.getElementById('r12').textContent = '0원';
+        document.getElementById('resFinal').textContent = '0원';
+        return;
+      }
+
+      const ltcDeduct  = Math.round(gain * ltcRate);
+      const basicDeduct = 2500000;
+      const taxBase    = Math.max(gain - ltcDeduct - basicDeduct, 0);
+      const { rate, deduct, tax } = getIncomeTax(taxBase);
+      const localTax   = Math.round(tax * 0.1);
+      const totalTax   = tax + localTax;
+
+      document.getElementById('r5').textContent  = (ltcDeduct > 0 ? '-' : '') + numFmt(ltcDeduct);
+      document.getElementById('r7').textContent  = numFmt(taxBase);
+      document.getElementById('rRateChip').textContent = Math.round(rate * 100) + '%';
+      document.getElementById('r8').textContent  = numFmt(Math.round(taxBase * rate));
+      document.getElementById('r9').textContent  = '-' + numFmt(deduct);
+      document.getElementById('r10').textContent = numFmt(tax);
+      document.getElementById('r11').textContent = numFmt(localTax);
+      document.getElementById('r12').textContent = numFmt(totalTax);
+      document.getElementById('resFinal').textContent = numFmt(totalTax);
+    });
+  })();
+  </script>
+</body>
+</html>
