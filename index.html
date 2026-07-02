@@ -931,6 +931,27 @@
         <button class="house-tab" onclick="selectHouse(3)">3주택↑</button>
       </div>
       <div class="input-hint" style="margin-top:14px;" id="house-hint">1세대 1주택 비과세 요건 검토</div>
+
+      <div class="input-item" id="contract-field" style="display:none; margin-top:16px;">
+        <label>매매계약일 <span style="font-weight:400;color:#8b95a1;">(선택)</span></label>
+        <div class="date-picker">
+          <select class="dp-y" id="contractY" onchange="syncDate('contract')">
+            <option value="">년도</option>
+          </select>
+          <select class="dp-m" id="contractM" onchange="syncDate('contract')">
+            <option value="">월</option>
+          </select>
+          <select class="dp-d" id="contractD" onchange="syncDate('contract')">
+            <option value="">일</option>
+          </select>
+        </div>
+        <input type="hidden" id="contractDate">
+        <div class="input-hint">
+          조정지역 다주택자 중과 유예(~2026.5.9) 종료 후에도, 2026.5.9까지 매매계약을 체결했다면
+          계약일 기준 4~6개월(지역별 상이) 내 양도 시 유예가 인정될 수 있습니다. 잔금일(양도일)과
+          계약일이 다른 경우에만 입력하세요.
+        </div>
+      </div>
     </div>
 
     <!-- 공통 버튼 -->
@@ -2129,7 +2150,7 @@ function initDatePickers() {
   const now = new Date();
   const curY = now.getFullYear();
 
-  ['acq', 'sale'].forEach(prefix => {
+  ['acq', 'sale', 'contract'].forEach(prefix => {
     const yEl = document.getElementById(prefix + 'Y');
     const mEl = document.getElementById(prefix + 'M');
     const dEl = document.getElementById(prefix + 'D');
@@ -2232,7 +2253,7 @@ function onRegionInput() {
 
 // 뱃지만 갱신 (드롭다운 건드리지 않음)
 function updateBadge() {
-  const q = document.getElementById('region').value.trim();
+  const q = normalizeSido(document.getElementById('region').value.trim());
   const acqDate = document.getElementById('acqDate').value;
   const wrap = document.getElementById('region-badge-wrap');
   wrap.innerHTML = '';
@@ -2249,9 +2270,37 @@ function updateBadge() {
   }
 }
 
+// 시/도 축약 표기 ↔ 정식 명칭 매핑 (사용자가 "서울시", "부산시" 등 축약형으로
+// 입력해도 DB의 정식 명칭("서울특별시", "부산광역시")과 매칭되도록 정규화)
+const SIDO_ALIASES = {
+  '서울': '서울특별시', '서울시': '서울특별시',
+  '부산': '부산광역시', '부산시': '부산광역시',
+  '대구': '대구광역시', '대구시': '대구광역시',
+  '인천': '인천광역시', '인천시': '인천광역시',
+  '광주': '광주광역시', '광주시': '광주광역시',
+  '대전': '대전광역시', '대전시': '대전광역시',
+  '울산': '울산광역시', '울산시': '울산광역시',
+  '세종': '세종특별자치시', '세종시': '세종특별자치시',
+  '경기': '경기도',
+  '강원': '강원특별자치도', '강원도': '강원특별자치도',
+  '충북': '충청북도', '충남': '충청남도',
+  '전북': '전북특별자치도', '전라북도': '전북특별자치도',
+  '전남': '전라남도',
+  '경북': '경상북도', '경남': '경상남도',
+  '제주': '제주특별자치도', '제주도': '제주특별자치도',
+};
+function normalizeSido(name) {
+  if (!name) return name;
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 0) return name;
+  if (SIDO_ALIASES[parts[0]]) parts[0] = SIDO_ALIASES[parts[0]];
+  return parts.join(' ');
+}
+
 // 조정지역 판정
 function checkRegulated(regionName, dateStr) {
   if (!regionName || !dateStr) return null;
+  regionName = normalizeSido(regionName);
   // 날짜 직접 파싱 (timezone 이슈 방지)
   const [ty, tm, td] = dateStr.split('-').map(Number);
   const t = new Date(ty, tm - 1, td);
@@ -2340,6 +2389,7 @@ function selectHouse(n) {
     '조정지역은 중과세율이 적용됩니다'
   ];
   document.getElementById('house-hint').textContent = hints[n-1];
+  document.getElementById('contract-field').style.display = (n >= 2) ? 'block' : 'none';
 }
 
 function updateIndicator(step) {
@@ -2440,10 +2490,8 @@ function getHoldMonths(acqStr, saleStr) {
 
 // 장기보유특별공제
 // - 1세대1주택(houseN===1) 표2: 보유기간별(연 4%, 최대 40%) + 거주기간별(연 4%, 최대 40%) = 최대 80%
-//   · 조정대상지역(취득 당시 기준, 2년 거주요건 적용): 거주기간은 실제 입력한 거주기간(기간입력)으로 계산
-//     (거주 2년 이상 3년 미만 8%, 3년 이상 연 4%씩 증가, 10년 이상 40% 한도. 2년 미만은 0%)
-//   · 비조정지역(거주요건 없음): 거주기간을 별도로 입력받지 않으므로 보유기간(취득일~양도일, 날짜입력)
-//     전체를 거주한 것으로 간주하여 보유기간과 동일한 공제율을 적용
+//   지역(조정/비조정) 구분 없이, 거주기간은 항상 실제 입력한 거주기간 값으로 계산한다.
+//   (거주 2년 이상 3년 미만 8%, 3년 이상 연 4%씩 증가, 10년 이상 40% 한도. 2년 미만은 0%)
 // - 다주택자(houseN>1) 표1: 보유기간별 연 2%
 function getLthdRate(holdM, resideM, houseN, isReg) {
   const hy = Math.floor(holdM / 12);
@@ -2452,19 +2500,13 @@ function getLthdRate(holdM, resideM, houseN, isReg) {
 
   if (houseN === 1) {
     const hr = Math.min(hy * 0.04, 0.40);
-    let rr, ryDisplay;
-    if (isReg) {
-      if (ry >= 3)      rr = Math.min(ry * 0.04, 0.40);
-      else if (ry >= 2) rr = 0.08;
-      else              rr = 0;
-      ryDisplay = ry;
-    } else {
-      rr = hr;       // 거주요건 없음 → 보유기간(날짜입력)과 동일하게 적용
-      ryDisplay = hy;
-    }
-    return { hr, rr, hy, ry: ryDisplay };
+    let rr;
+    if (ry >= 3)      rr = Math.min(ry * 0.04, 0.40);
+    else if (ry >= 2) rr = 0.08;
+    else              rr = 0;
+    return { hr, rr, hy, ry };
   }
-  return { hr: Math.min(hy * 0.02, 0.20), rr: 0, hy, ry };
+  return { hr: Math.min(hy * 0.02, 0.30), rr: 0, hy, ry };
 }
 
 // 케이스 계산
@@ -2530,6 +2572,53 @@ function calcCase(gain, salePrice, holdM, resideM, houseN, isReg) {
 }
 
 // ============================================================
+// 다주택자 조정지역 중과 · 장특공 배제 — 한시적 유예 판정
+// ============================================================
+// 유예기간: 2022.5.10. ~ 2026.5.9. (다주택자 조정지역 양도 시 중과 미적용 + 장특공 정상)
+const SURCHARGE_SUSPEND_START = '2022-05-10';
+const SURCHARGE_SUSPEND_END   = '2026-05-09';
+
+// 유예 종료(2026.5.9.) 이후 보완규정: 2026.5.9.까지 매매계약 체결한 경우,
+// 계약일로부터 아래 기간 내 양도 시 유예 인정 (지역별 상이)
+const GRACE_CORE4 = ['서울특별시 강남구', '서울특별시 서초구', '서울특별시 송파구', '서울특별시 용산구'];
+function getGraceInfo(regionName, saleDate) {
+  const norm = normalizeSido(regionName);
+  if (GRACE_CORE4.includes(norm)) {
+    return { months: 4, deadline: '2026-09-09', label: '강남·서초·송파·용산' };
+  }
+  const reg = checkRegulated(regionName, saleDate);
+  if (reg && reg.isRegulated && reg.start === '2025-10-16') {
+    return { months: 6, deadline: '2026-11-09', label: '2025.10.16 신규 지정 조정대상지역' };
+  }
+  return null;
+}
+
+// 다주택자 중과/장특공배제가 실제로 적용되는지 판정
+// (isRegSale: 양도 시점 기준 조정지역 여부)
+function resolveSurcharge(regionName, saleDate, isRegSale, contractDate) {
+  if (!isRegSale) return { applies: false, reason: '비조정지역' };
+  if (!saleDate) return { applies: false, reason: '양도일 미입력' };
+
+  if (saleDate >= SURCHARGE_SUSPEND_START && saleDate <= SURCHARGE_SUSPEND_END) {
+    return { applies: false, reason: '유예기간(2022.5.10.~2026.5.9.) 내 양도' };
+  }
+  if (saleDate > SURCHARGE_SUSPEND_END) {
+    if (contractDate && contractDate <= SURCHARGE_SUSPEND_END) {
+      const grace = getGraceInfo(regionName, saleDate);
+      if (grace) {
+        const monthsBetween = getHoldMonths(contractDate, saleDate);
+        if (monthsBetween <= grace.months && saleDate <= grace.deadline) {
+          return { applies: false, reason: `보완규정 그레이스 기간 인정 (${grace.label}, 계약일로부터 ${grace.months}개월 이내)` };
+        }
+      }
+    }
+    return { applies: true, reason: '유예기간 종료 후 양도 (그레이스 요건 미충족)' };
+  }
+  // saleDate < SURCHARGE_SUSPEND_START (2022.5.10. 이전 양도)
+  return { applies: true, reason: '유예기간 이전 양도' };
+}
+
+// ============================================================
 // 메인 계산
 // ============================================================
 function calculate() {
@@ -2541,9 +2630,14 @@ function calculate() {
   const resideYear  = +document.getElementById('resideYear').value || 0;
   const resideMonth = +document.getElementById('resideMonth').value || 0;
   const resideMonths = resideYear * 12 + resideMonth;
+  const contractDate = document.getElementById('contractDate') ? document.getElementById('contractDate').value : '';
 
-  const regulated = checkRegulated(region, acqDate);
-  const isReg = regulated ? regulated.isRegulated : false;
+  // 1세대1주택 2년 거주요건 등은 '취득 당시' 조정지역 여부로 판단
+  const regulatedAcq = checkRegulated(region, acqDate);
+  const isRegAcq = regulatedAcq ? regulatedAcq.isRegulated : false;
+  // 다주택자 중과·장특공배제는 '양도 시점' 조정지역 여부로 판단
+  const regulatedSale = checkRegulated(region, saleDate);
+  const isRegSale = regulatedSale ? regulatedSale.isRegulated : false;
 
   // 보유기간 — 문자열 직접 파싱
   const holdM  = getHoldMonths(acqDate, saleDate);
@@ -2551,7 +2645,8 @@ function calculate() {
   const holdMr = holdM % 12;
   const gain   = salePrice - acqPrice;
 
-  renderResult({ region, acqDate, saleDate, acqPrice, salePrice, resideMonths, holdM, holdY, holdMr, isReg, regulated, gain, houseN: selectedHouse });
+  renderResult({ region, acqDate, saleDate, acqPrice, salePrice, resideMonths, holdM, holdY, holdMr,
+    isReg: isRegAcq, isRegAcq, isRegSale, regulated: regulatedAcq, contractDate, gain, houseN: selectedHouse });
 }
 
 // ============================================================
@@ -2565,11 +2660,30 @@ function renderResult(p) {
   const resideY   = Math.floor(p.resideMonths / 12);
   const resideM   = p.resideMonths % 12;
   const resideStr = `${resideY}년. ${resideM}개월.`;
-  const regLabel  = p.isReg ? '🚨 조정대상지역' : '✅ 비규제지역';
+  const regLabelBasis = p.houseN >= 2 ? p.isRegSale : p.isReg;
+  const regLabel  = regLabelBasis ? '🚨 조정대상지역' : '✅ 비규제지역';
+  const regLabelNote = p.houseN >= 2 ? ' (양도일 기준)' : ' (취득일 기준)';
 
-  const r = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, p.isReg);
+  // 다주택자(2주택 이상): 양도시점 조정지역 여부 + 한시적 유예·그레이스 기간을 반영해
+  // 실제로 중과/장특공배제가 적용되는지 판정
+  let surchargeInfo = null;
+  let effectiveIsReg = p.isReg;
+  if (p.houseN >= 2) {
+    surchargeInfo = resolveSurcharge(p.region, p.saleDate, p.isRegSale, p.contractDate);
+    effectiveIsReg = surchargeInfo.applies;
+  }
+
+  const r = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, effectiveIsReg);
 
   let html = '';
+
+  // 다주택자 유예/그레이스 안내 배너
+  if (p.houseN >= 2 && p.isRegSale) {
+    html += `<div class="rcard" style="border:1.5px solid ${effectiveIsReg ? '#f04452' : '#3182f6'};">
+      <div class="rcard-title">${effectiveIsReg ? '🚨 조정지역 다주택 중과 적용' : '✅ 조정지역 다주택 중과 유예 적용'}</div>
+      <div class="calc-row"><span class="cl">판정 사유</span><span class="cv" style="text-align:right;max-width:220px;">${surchargeInfo.reason}</span></div>
+    </div>`;
+  }
 
   // 요약
   if (r.exempt) {
@@ -2592,7 +2706,7 @@ function renderResult(p) {
   html += `<div class="rcard">
     <div class="rcard-title">기본 정보</div>
     <div class="calc-row"><span class="cl">소재지</span><span class="cv">${p.region}</span></div>
-    <div class="calc-row"><span class="cl">규제지역</span><span class="cv">${regLabel}</span></div>
+    <div class="calc-row"><span class="cl">규제지역</span><span class="cv">${regLabel}<span style="font-size:11px;color:#8b95a1;">${regLabelNote}</span></span></div>
     <div class="calc-row"><span class="cl">취득일</span><span class="cv">${fmtDate(p.acqDate)}</span></div>
     <div class="calc-row"><span class="cl">양도일</span><span class="cv">${fmtDate(p.saleDate)}</span></div>
     <div class="calc-row"><span class="cl">보유기간</span><span class="cv blue">${holdStr}</span></div>
@@ -2616,7 +2730,7 @@ function renderResult(p) {
         ? `장기보유특별공제 (보유 ${r.hrY}년 ${Math.round(r.hr*100)}% + 거주 ${r.rrY}년 ${Math.round(r.rr*100)}%)`
         : `장기보유특별공제 (${Math.round(r.lthdRate*100)}%)`;
       html += `<div class="calc-row"><span class="cl">${rateLabel}</span><span class="cv red">- ${fmt(r.lthd)}</span></div>`;
-    } else if (p.holdM >= 36 && p.houseN > 1 && p.isReg) {
+    } else if (p.holdM >= 36 && p.houseN > 1 && effectiveIsReg) {
       html += `<div class="calc-row"><span class="cl">장기보유특별공제</span><span class="cv red">중과로 배제</span></div>`;
     }
 
@@ -2650,15 +2764,17 @@ function renderResult(p) {
 
   // 2·3주택 비교
   if (p.houseN >= 2) {
+    const rSurchargeInfo = resolveSurcharge(p.region, p.saleDate, true /* 조정지역 가정 */, p.contractDate);
     const rN = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, false);
-    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, true);
+    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, rSurchargeInfo.applies);
     const sur = p.houseN === 2 ? '+20%p' : '+30%p';
     html += `<div class="rcard"><div class="rcard-title">일반지역 vs 조정지역 비교</div>
       <div class="calc-row"><span class="cl">일반지역 납부세액</span><span class="cv blue">${fmt(rN.totalTax)}</span></div>
       <div class="calc-row"><span class="cl">일반지역 장기보유공제</span><span class="cv">${Math.round(rN.lthdRate*100)}%</span></div>
-      <div class="calc-row"><span class="cl">조정지역 납부세액 (중과)</span><span class="cv red">${fmt(rR.totalTax)}</span></div>
-      <div class="calc-row"><span class="cl">조정지역 중과세율</span><span class="cv red">${sur}</span></div>
-      <div class="calc-row"><span class="cl">조정지역 장기보유공제</span><span class="cv red">배제</span></div>
+      <div class="calc-row"><span class="cl">조정지역 납부세액${rSurchargeInfo.applies ? ' (중과)' : ' (유예)'}</span><span class="cv ${rSurchargeInfo.applies ? 'red' : 'blue'}">${fmt(rR.totalTax)}</span></div>
+      <div class="calc-row"><span class="cl">조정지역 중과세율</span><span class="cv ${rSurchargeInfo.applies ? 'red' : ''}">${rSurchargeInfo.applies ? sur : '미적용(유예)'}</span></div>
+      <div class="calc-row"><span class="cl">조정지역 장기보유공제</span><span class="cv ${rSurchargeInfo.applies ? 'red' : ''}">${rSurchargeInfo.applies ? '배제' : Math.round(rR.lthdRate*100)+'%'}</span></div>
+      <div class="calc-row"><span class="cl" style="font-size:11px;color:#8b95a1;">${rSurchargeInfo.reason}</span><span class="cv"></span></div>
     </div>`;
   }
 
@@ -2670,7 +2786,7 @@ function renderResult(p) {
     if (p.salePrice > 1_200_000_000) tips.push('고가주택(12억 초과)은 초과분에만 과세됩니다. 12억 이하 양도 시 전액 비과세입니다.');
     if (p.holdM >= 36 && Math.round((r.lthdRate||0)*100) < 80) tips.push(`보유기간을 늘릴수록 장기보유특별공제율이 높아집니다 (최대 80%).`);
   }
-  if (!r.exempt && p.houseN >= 2 && p.isReg) tips.push('조정지역 다주택은 중과세율이 적용됩니다. 비조정지역 주택 먼저 양도, 또는 1주택 상태 양도를 검토해보세요.');
+  if (!r.exempt && p.houseN >= 2 && effectiveIsReg) tips.push('조정지역 다주택은 중과세율이 적용됩니다. 비조정지역 주택 먼저 양도, 또는 1주택 상태 양도를 검토해보세요.');
   if (!r.exempt && p.holdM < 36) tips.push('3년 이상 보유 시 장기보유특별공제가 적용되어 세액이 줄어듭니다.');
 
   if (tips.length) {
