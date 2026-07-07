@@ -2499,12 +2499,14 @@ function getLthdRate(holdM, resideM, houseN, isReg) {
   if (hy < 3) return { hr: 0, rr: 0, hy, ry };
 
   if (houseN === 1) {
+    if (ry < 2) {
+      // 거주기간 2년 미만: 장특공 표1 적용 (일반 장기보유특별공제, 연 2%, 최대 30%(15년))
+      return { hr: Math.min(hy * 0.02, 0.30), rr: 0, hy, ry, table: 1 };
+    }
+    // 거주기간 2년 이상: 장특공 표2 적용 (1세대1주택자 특례, 보유 연4% + 거주 연4%)
     const hr = Math.min(hy * 0.04, 0.40);
-    let rr;
-    if (ry >= 3)      rr = Math.min(ry * 0.04, 0.40);
-    else if (ry >= 2) rr = 0.08;
-    else              rr = 0;
-    return { hr, rr, hy, ry };
+    const rr = ry >= 3 ? Math.min(ry * 0.04, 0.40) : 0.08;
+    return { hr, rr, hy, ry, table: 2 };
   }
   return { hr: Math.min(hy * 0.02, 0.30), rr: 0, hy, ry };
 }
