@@ -4,67 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>양도소득세 계산기</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
-        "Pretendard Variable", Pretendard, "Noto Sans KR", sans-serif;
-      background: #f2f4f6;
-      color: #191f28;
-      min-height: 100vh;
-      margin: 0;
-    }
-    /* ══════════════ 메뉴 화면 ══════════════ */
-    #menu-section {
-      max-width: 480px; margin: 0 auto;
-      padding: 48px 24px 40px;
-      min-height: 100vh;
-    }
-    .menu-eyebrow {
-      font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
-      color: #3182f6; margin-bottom: 10px;
-    }
-    .menu-title {
-      font-size: 30px; font-weight: 800; color: #191f28;
-      line-height: 1.28; margin-bottom: 12px; letter-spacing: -0.01em;
-    }
-    .menu-desc { font-size: 14px; color: #6b7684; line-height: 1.6; margin-bottom: 36px; }
-
-    .menu-cards { display: flex; flex-direction: column; gap: 12px; }
-    .menu-card {
-      display: flex; align-items: center; gap: 14px;
-      width: 100%; text-align: left;
-      background: #fff; border: 1.5px solid #f2f4f6; border-radius: 18px;
-      padding: 20px 18px; cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-      transition: border-color 0.15s, transform 0.15s;
-    }
-    .menu-card:active { transform: scale(0.98); }
-    .menu-card:hover { border-color: #3182f6; }
-
-    .menu-card-icon {
-      width: 46px; height: 46px; flex-shrink: 0; border-radius: 13px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .menu-card-icon svg { width: 24px; height: 24px; }
-    .menu-card-icon.house { background: #eff6ff; color: #3182f6; }
-    .menu-card-icon.bldg  { background: #f0fdf9; color: #03b26c; }
-
-    .menu-card-body { flex: 1; min-width: 0; }
-    .menu-card-title { font-size: 15.5px; font-weight: 700; color: #191f28; margin-bottom: 4px; }
-    .menu-card-desc { font-size: 12.5px; color: #8b95a1; line-height: 1.4; }
-
-    .menu-card-arrow { width: 18px; height: 18px; flex-shrink: 0; color: #d1d6db; }
-
-    .menu-footnote {
-      font-size: 11.5px; color: #b0b8c1; line-height: 1.7;
-      margin-top: 32px; text-align: center;
-    }
-
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
@@ -84,16 +24,6 @@
       box-shadow: 0 1px 0 #f2f4f6;
     }
     .top-bar h1 { font-size: 17px; font-weight: 700; color: #191f28; margin-bottom: 14px; }
-    .topbar-title-row { display: flex; align-items: center; gap: 6px; }
-    .topbar-title-row h1 { margin-bottom: 0; }
-    .menu-back-btn {
-      width: 28px; height: 28px; flex-shrink: 0;
-      border: none; background: #f2f4f6; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: #4e5968; cursor: pointer; margin-bottom: 14px;
-    }
-    .menu-back-btn:hover { background: #e5e8eb; }
-    .menu-back-btn svg { width: 15px; height: 15px; }
 
     /* ── 스텝 인디케이터 ── */
     .step-indicator {
@@ -331,486 +261,14 @@
     .ac-item:last-child { border-bottom: none; }
     .ac-item.focused { background: #eff6ff; color: #3182f6; }
     .ac-item mark { background: none; color: #3182f6; font-weight: 700; }
-  
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --blue: #3182f6;
-      --blue-hover: #1b6fe0;
-      --blue-light: #ebf3ff;
-      --blue-text: #1861c9;
-      --red: #f04452;
-      --green: #00b493;
-      --gray-50: #f9f9f9;
-      --gray-100: #f2f2f2;
-      --gray-200: #e8e8e8;
-      --gray-300: #d1d1d1;
-      --gray-400: #b0b0b0;
-      --gray-500: #8b8b8b;
-      --gray-600: #6b6b6b;
-      --gray-700: #4b4b4b;
-      --gray-800: #2e2e2e;
-      --gray-900: #191919;
-      --font: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-    }
-
-    
-
-    .commercial-app { font-family: var(--font); background: #f7f8fa; color: var(--gray-900); min-height: 100vh; padding-bottom: 60px; }
-
-    /* Header */
-    .header {
-      background: #fff;
-      border-bottom: 1px solid var(--gray-200);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-inner {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 20px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .header-back {
-      width: 32px; height: 32px;
-      border: none; background: none;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%;
-      color: var(--gray-800);
-      flex-shrink: 0;
-    }
-    .header-back:hover { background: var(--gray-100); }
-    .header-back svg { width: 20px; height: 20px; }
-    .header-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--gray-900);
-    }
-
-    /* Layout */
-    .container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    /* Hero */
-    .hero {
-      padding: 28px 0 20px;
-    }
-    .hero-eyebrow {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--blue);
-      margin-bottom: 6px;
-      letter-spacing: 0.03em;
-    }
-    .hero-title {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--gray-900);
-      line-height: 1.35;
-      margin-bottom: 8px;
-    }
-    .hero-desc {
-      font-size: 14px;
-      color: var(--gray-500);
-      line-height: 1.6;
-    }
-
-    /* Section */
-    .section { margin-top: 24px; }
-    .section-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gray-500);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      padding-left: 4px;
-    }
-
-    /* Card */
-    .card {
-      background: #fff;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--gray-200);
-      overflow: hidden;
-    }
-
-    /* Field row */
-    .field {
-      display: flex;
-      align-items: center;
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    .field:last-child { border-bottom: none; }
-    .field-label {
-      font-size: 14px;
-      color: var(--gray-600);
-      flex-shrink: 0;
-      width: 100px;
-    }
-    .field-body {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 4px;
-    }
-    .field input {
-      background: none;
-      border: none;
-      outline: none;
-      font-family: var(--font);
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--gray-900);
-      text-align: right;
-      width: 100%;
-    }
-    .field input::placeholder { color: var(--gray-300); font-weight: 400; }
-    .field input:focus { color: var(--blue); }
-    .field-unit {
-      font-size: 13px;
-      color: var(--gray-400);
-      flex-shrink: 0;
-    }
-
-    /* Date field */
-    .date-field {
-      display: flex;
-      align-items: center;
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    .date-field:last-child { border-bottom: none; }
-    .date-label {
-      font-size: 14px;
-      color: var(--gray-600);
-      width: 100px;
-      flex-shrink: 0;
-    }
-    .date-inputs {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      flex: 1;
-      justify-content: flex-end;
-    }
-    .date-inputs input {
-      background: none;
-      border: none;
-      outline: none;
-      font-family: var(--font);
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--gray-900);
-      text-align: center;
-    }
-    .date-inputs input::placeholder { color: var(--gray-300); font-weight: 400; }
-    .date-inputs input:focus { color: var(--blue); }
-    .date-inputs input.year { width: 50px; }
-    .date-inputs input.month { width: 30px; }
-    .date-inputs input.day { width: 30px; }
-    .date-sep {
-      font-size: 14px;
-      color: var(--gray-400);
-      padding: 0 1px;
-    }
-
-    /* Toggle row */
-    .toggle-field {
-      display: flex;
-      align-items: center;
-      padding: 16px 18px;
-    }
-    .toggle-label-wrap { flex: 1; }
-    .toggle-label-main {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--gray-900);
-    }
-    .toggle-label-sub {
-      font-size: 12px;
-      color: var(--gray-400);
-      margin-top: 2px;
-    }
-    .toss-toggle {
-      position: relative;
-      width: 48px; height: 26px;
-      flex-shrink: 0;
-    }
-    .toss-toggle input { opacity: 0; width: 0; height: 0; }
-    .toss-toggle-bg {
-      position: absolute;
-      inset: 0;
-      background: var(--gray-300);
-      border-radius: 13px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .toss-toggle input:checked ~ .toss-toggle-bg { background: var(--blue); }
-    .toss-toggle-dot {
-      position: absolute;
-      top: 3px; left: 3px;
-      width: 20px; height: 20px;
-      background: #fff;
-      border-radius: 50%;
-      pointer-events: none;
-      transition: transform 0.2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-    }
-    .toss-toggle input:checked ~ .toss-toggle-dot { transform: translateX(22px); }
-
-    /* Sub card (빌딩 토지/건물) */
-    .sub-card {
-      margin: 0 18px 16px;
-      background: var(--gray-50);
-      border: 1px solid var(--gray-100);
-      border-radius: var(--radius-md);
-      overflow: hidden;
-    }
-    .sub-card-title {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--gray-400);
-      letter-spacing: 0.05em;
-      padding: 10px 14px 8px;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    .sub-field {
-      display: flex;
-      align-items: center;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--gray-100);
-    }
-    .sub-field:last-child { border-bottom: none; }
-    .sub-field-label {
-      font-size: 13px;
-      color: var(--gray-600);
-      width: 60px;
-      flex-shrink: 0;
-    }
-    .sub-field input {
-      flex: 1;
-      background: none;
-      border: none;
-      outline: none;
-      font-family: var(--font);
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--gray-900);
-      text-align: right;
-    }
-    .sub-field input::placeholder { color: var(--gray-300); font-weight: 400; }
-    .sub-field input:focus { color: var(--blue); }
-    .sub-field-unit { font-size: 12px; color: var(--gray-400); margin-left: 3px; }
-
-    /* Hint */
-    .hint {
-      font-size: 12px;
-      color: var(--gray-400);
-      line-height: 1.6;
-      padding: 0 18px 14px;
-    }
-
-    /* Error */
-    .error-msg {
-      font-size: 13px;
-      color: var(--red);
-      padding: 10px 4px 0;
-      display: none;
-    }
-
-    /* CTA Button */
-    .cta-btn {
-      width: 100%;
-      background: var(--blue);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-lg);
-      padding: 18px;
-      font-family: var(--font);
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: background 0.15s, transform 0.1s;
-      letter-spacing: -0.01em;
-    }
-    .cta-btn:hover { background: var(--blue-hover); }
-    .cta-btn:active { transform: scale(0.98); background: #1661c9; }
-    .cta-btn:disabled { background: var(--gray-300); cursor: not-allowed; }
-
-    /* Result */
-    .result-card {
-      background: #fff;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--gray-200);
-      padding: 20px 20px 16px;
-      margin-top: 24px;
-      display: none;
-    }
-    .c-result-header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .result-eyebrow {
-      font-size: 12px;
-      color: var(--gray-500);
-      margin-bottom: 4px;
-    }
-    .result-total {
-      font-size: 30px;
-      font-weight: 700;
-      color: var(--gray-900);
-      letter-spacing: -0.02em;
-    }
-    .result-badge {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--blue-text);
-      background: var(--blue-light);
-      padding: 4px 10px;
-      border-radius: 99px;
-    }
-
-    .result-divider {
-      height: 1px;
-      background: var(--gray-100);
-      margin: 12px 0;
-    }
-
-    .result-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 5px 0;
-    }
-    .result-row-label {
-      font-size: 13px;
-      color: var(--gray-500);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .result-row-val {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--gray-800);
-    }
-    .result-row-val.c-red { color: var(--red); }
-    .result-row-val.c-blue { color: var(--blue); }
-    .result-row-val.c-green { color: var(--green); }
-
-    .result-row.strong .result-row-label {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--gray-800);
-    }
-    .result-row.strong .result-row-val {
-      font-size: 15px;
-      color: var(--blue);
-    }
-
-    .period-chip {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--gray-500);
-      background: var(--gray-100);
-      padding: 2px 7px;
-      border-radius: 99px;
-    }
-
-    .rate-chip {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--blue-text);
-      background: var(--blue-light);
-      padding: 2px 7px;
-      border-radius: 99px;
-    }
-
-    .c-notice {
-      font-size: 11px;
-      color: var(--gray-400);
-      line-height: 1.7;
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid var(--gray-100);
-    }
-    .c-notice strong { color: var(--gray-500); }
-  
   </style>
 </head>
 <body>
 
-<!-- ══════════════ 메인 메뉴 ══════════════ -->
-<div id="menu-section">
-  <div class="menu-top">
-    <p class="menu-eyebrow">TAX CALCULATOR</p>
-    <h1 class="menu-title">양도소득세<br>계산기</h1>
-    <p class="menu-desc">부동산 종류를 선택하면<br>맞춤 계산기로 이동해요</p>
-  </div>
-
-  <div class="menu-cards">
-    <button class="menu-card" onclick="goToHouse()">
-      <div class="menu-card-icon house">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/>
-        </svg>
-      </div>
-      <div class="menu-card-body">
-        <div class="menu-card-title">주택 양도세</div>
-        <div class="menu-card-desc">아파트 · 단독주택 · 1세대1주택 비과세 판정</div>
-      </div>
-      <svg class="menu-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </button>
-
-    <button class="menu-card" onclick="goToCommercial()">
-      <div class="menu-card-icon bldg">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4" y="3" width="9" height="18"/><rect x="13" y="8" width="7" height="13"/><path d="M7 7h2M7 11h2M7 15h2"/>
-        </svg>
-      </div>
-      <div class="menu-card-body">
-        <div class="menu-card-title">주택 외 부동산 양도세</div>
-        <div class="menu-card-desc">상가 · 빌딩 · 토지 등 주택 외 부동산</div>
-      </div>
-      <svg class="menu-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-    </button>
-  </div>
-
-  <p class="menu-footnote">본 계산기는 참고용이며 법적 효력이 없습니다.<br>정확한 세액은 세무사 상담을 권장합니다.</p>
-</div>
-
-
-<div id="house-app" style="display:none">
-
-
 <!-- ══════════════ 입력 위자드 ══════════════ -->
 <div id="wizard-section">
   <div class="top-bar">
-    <div class="topbar-title-row">
-      <button class="menu-back-btn" onclick="goToMenu()" aria-label="메뉴로">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <h1>주택 양도소득세 계산기</h1>
-    </div>
+    <h1>양도소득세 계산기</h1>
     <div class="step-indicator" id="step-indicator">
       <div class="step-dot active" id="sd1">1</div>
       <div class="step-line" id="sl1"></div>
@@ -931,27 +389,6 @@
         <button class="house-tab" onclick="selectHouse(3)">3주택↑</button>
       </div>
       <div class="input-hint" style="margin-top:14px;" id="house-hint">1세대 1주택 비과세 요건 검토</div>
-
-      <div class="input-item" id="contract-field" style="display:none; margin-top:16px;">
-        <label>매매계약일 <span style="font-weight:400;color:#8b95a1;">(선택)</span></label>
-        <div class="date-picker">
-          <select class="dp-y" id="contractY" onchange="syncDate('contract')">
-            <option value="">년도</option>
-          </select>
-          <select class="dp-m" id="contractM" onchange="syncDate('contract')">
-            <option value="">월</option>
-          </select>
-          <select class="dp-d" id="contractD" onchange="syncDate('contract')">
-            <option value="">일</option>
-          </select>
-        </div>
-        <input type="hidden" id="contractDate">
-        <div class="input-hint">
-          조정지역 다주택자 중과 유예(~2026.5.9) 종료 후에도, 2026.5.9까지 매매계약을 체결했다면
-          계약일 기준 4~6개월(지역별 상이) 내 양도 시 유예가 인정될 수 있습니다. 잔금일(양도일)과
-          계약일이 다른 경우에만 입력하세요.
-        </div>
-      </div>
     </div>
 
     <!-- 공통 버튼 -->
@@ -967,12 +404,7 @@
 <!-- ══════════════ 결과 ══════════════ -->
 <div id="result-section">
   <div class="result-header">
-    <div class="topbar-title-row">
-      <button class="menu-back-btn" onclick="goToMenu()" aria-label="메뉴로">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <h1>계산 결과</h1>
-    </div>
+    <h1>계산 결과</h1>
   </div>
   <div class="result-body">
     <button class="btn-reset" onclick="resetAll()">← 다시 계산하기</button>
@@ -985,224 +417,6 @@
   </div>
 </div>
 
-
-
-
-</div>
-
-<div id="commercial-app" class="commercial-app" style="display:none">
-
-
-  <header class="header">
-    <div class="header-inner">
-      <button class="header-back" onclick="goToMenu()" aria-label="뒤로가기">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M15 18l-6-6 6-6"/>
-        </svg>
-      </button>
-      <span class="header-title">주택 외 양도세 계산기</span>
-    </div>
-  </header>
-
-  <div class="container">
-
-    <div class="hero">
-      <p class="hero-eyebrow">상가 · 빌딩 전용</p>
-      <h1 class="hero-title">내 부동산<br>양도세를 계산해요</h1>
-      <p class="hero-desc">취득·양도 정보를 입력하면 장기보유특별공제를<br>자동 반영해 세금을 계산해드려요.</p>
-    </div>
-
-    <!-- 부동산 종류 -->
-    <div class="section">
-      <p class="section-title">부동산 종류</p>
-      <div class="card">
-        <div class="toggle-field">
-          <div class="toggle-label-wrap">
-            <div class="toggle-label-main">빌딩 (토지·건물 분리)</div>
-            <div class="toggle-label-sub">계약서에 토지·건물 금액이 구분된 경우</div>
-          </div>
-          <label class="toss-toggle">
-            <input type="checkbox" id="isBldg">
-            <span class="toss-toggle-bg"></span>
-            <span class="toss-toggle-dot"></span>
-          </label>
-        </div>
-        <div id="bldgSection" style="display:none; border-top: 1px solid var(--gray-100);">
-          <div class="sub-card" style="margin-top:14px;">
-            <div class="sub-card-title">계약서상 금액</div>
-            <div class="sub-field">
-              <span class="sub-field-label">토지가액</span>
-              <input type="text" id="landVal" inputmode="numeric" placeholder="0">
-              <span class="sub-field-unit">원</span>
-            </div>
-            <div class="sub-field">
-              <span class="sub-field-label">건물가액</span>
-              <input type="text" id="bldgVal" inputmode="numeric" placeholder="0">
-              <span class="sub-field-unit">원</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 취득 정보 -->
-    <div class="section">
-      <p class="section-title">취득 정보</p>
-      <div class="card">
-        <div class="date-field">
-          <span class="date-label">취득일자</span>
-          <div class="date-inputs">
-            <input class="year" type="text" id="cAcqY" inputmode="numeric" maxlength="4" placeholder="YYYY">
-            <span class="date-sep">년</span>
-            <input class="month" type="text" id="cAcqM" inputmode="numeric" maxlength="2" placeholder="MM">
-            <span class="date-sep">월</span>
-            <input class="day" type="text" id="cAcqD" inputmode="numeric" maxlength="2" placeholder="DD">
-            <span class="date-sep">일</span>
-          </div>
-        </div>
-        <div class="field">
-          <span class="field-label">실지취득가액</span>
-          <div class="field-body">
-            <input type="text" id="cAcqPrice" inputmode="numeric" placeholder="0">
-            <span class="field-unit">원</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 양도 정보 -->
-    <div class="section">
-      <p class="section-title">양도 정보</p>
-      <div class="card">
-        <div class="date-field">
-          <span class="date-label">양도일자</span>
-          <div class="date-inputs">
-            <input class="year" type="text" id="trfY" inputmode="numeric" maxlength="4" placeholder="YYYY">
-            <span class="date-sep">년</span>
-            <input class="month" type="text" id="trfM" inputmode="numeric" maxlength="2" placeholder="MM">
-            <span class="date-sep">월</span>
-            <input class="day" type="text" id="trfD" inputmode="numeric" maxlength="2" placeholder="DD">
-            <span class="date-sep">일</span>
-          </div>
-        </div>
-        <div class="field">
-          <span class="field-label">실지양도가액</span>
-          <div class="field-body">
-            <input type="text" id="trfPrice" inputmode="numeric" placeholder="0">
-            <span class="field-unit">원</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 필요경비 -->
-    <div class="section">
-      <p class="section-title">필요경비</p>
-      <div class="card">
-        <div class="field">
-          <span class="field-label">경비 합계</span>
-          <div class="field-body">
-            <input type="text" id="expense" inputmode="numeric" placeholder="0">
-            <span class="field-unit">원</span>
-          </div>
-        </div>
-        <p class="hint">취득세, 중개수수료, 법무사 비용, 자본적 지출(대수선비) 등을 모두 합산해 입력해요</p>
-      </div>
-    </div>
-
-    <p class="error-msg" id="errMsg"></p>
-
-    <button class="cta-btn" id="calcBtn">양도세 계산하기</button>
-
-    <!-- 결과 -->
-    <div class="result-card" id="resultCard">
-      <div class="c-result-header">
-        <div>
-          <p class="result-eyebrow">총 납부할 양도소득세</p>
-          <p class="result-total" id="resFinal">0원</p>
-        </div>
-        <span class="result-badge" id="resPeriodBadge"></span>
-      </div>
-
-      <div class="result-row">
-        <span class="result-row-label">실지양도가액</span>
-        <span class="result-row-val" id="r1"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">실지취득가액</span>
-        <span class="result-row-val c-red" id="r2"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">필요경비</span>
-        <span class="result-row-val c-red" id="r3"></span>
-      </div>
-
-      <div class="result-divider"></div>
-
-      <div class="result-row">
-        <span class="result-row-label">양도차익</span>
-        <span class="result-row-val" id="r4"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">
-          장기보유특별공제
-          <span class="period-chip" id="rPeriodChip"></span>
-        </span>
-        <span class="result-row-val c-blue" id="r5"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">기본공제</span>
-        <span class="result-row-val c-blue">-2,500,000원</span>
-      </div>
-
-      <div class="result-divider"></div>
-
-      <div class="result-row">
-        <span class="result-row-label">양도소득 과세표준</span>
-        <span class="result-row-val" id="r7"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">
-          적용 세율
-          <span class="rate-chip" id="rRateChip"></span>
-        </span>
-        <span class="result-row-val" id="r8"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">누진공제</span>
-        <span class="result-row-val c-red" id="r9"></span>
-      </div>
-
-      <div class="result-divider"></div>
-
-      <div class="result-row">
-        <span class="result-row-label">산출세액</span>
-        <span class="result-row-val" id="r10"></span>
-      </div>
-      <div class="result-row">
-        <span class="result-row-label">지방소득세 (10%)</span>
-        <span class="result-row-val" id="r11"></span>
-      </div>
-
-      <div class="result-divider"></div>
-
-      <div class="result-row strong">
-        <span class="result-row-label">총 납부세액</span>
-        <span class="result-row-val" id="r12"></span>
-      </div>
-
-      <p class="c-notice">
-        <strong>※ 유의사항</strong><br>
-        등기된 부동산 기준이며, 장기보유특별공제는 3년 이상 보유 시 연 2%씩 최대 30% 공제됩니다.<br>
-        본 계산기는 참고용으로, 실제 세액은 세무사 등 전문가 확인을 권장해요.
-      </p>
-    </div>
-
-  </div>
-
-  
-
-</div>
 
 <script>
 // ============================================================
@@ -2150,7 +1364,7 @@ function initDatePickers() {
   const now = new Date();
   const curY = now.getFullYear();
 
-  ['acq', 'sale', 'contract'].forEach(prefix => {
+  ['acq', 'sale'].forEach(prefix => {
     const yEl = document.getElementById(prefix + 'Y');
     const mEl = document.getElementById(prefix + 'M');
     const dEl = document.getElementById(prefix + 'D');
@@ -2253,7 +1467,7 @@ function onRegionInput() {
 
 // 뱃지만 갱신 (드롭다운 건드리지 않음)
 function updateBadge() {
-  const q = normalizeSido(document.getElementById('region').value.trim());
+  const q = document.getElementById('region').value.trim();
   const acqDate = document.getElementById('acqDate').value;
   const wrap = document.getElementById('region-badge-wrap');
   wrap.innerHTML = '';
@@ -2270,37 +1484,9 @@ function updateBadge() {
   }
 }
 
-// 시/도 축약 표기 ↔ 정식 명칭 매핑 (사용자가 "서울시", "부산시" 등 축약형으로
-// 입력해도 DB의 정식 명칭("서울특별시", "부산광역시")과 매칭되도록 정규화)
-const SIDO_ALIASES = {
-  '서울': '서울특별시', '서울시': '서울특별시',
-  '부산': '부산광역시', '부산시': '부산광역시',
-  '대구': '대구광역시', '대구시': '대구광역시',
-  '인천': '인천광역시', '인천시': '인천광역시',
-  '광주': '광주광역시', '광주시': '광주광역시',
-  '대전': '대전광역시', '대전시': '대전광역시',
-  '울산': '울산광역시', '울산시': '울산광역시',
-  '세종': '세종특별자치시', '세종시': '세종특별자치시',
-  '경기': '경기도',
-  '강원': '강원특별자치도', '강원도': '강원특별자치도',
-  '충북': '충청북도', '충남': '충청남도',
-  '전북': '전북특별자치도', '전라북도': '전북특별자치도',
-  '전남': '전라남도',
-  '경북': '경상북도', '경남': '경상남도',
-  '제주': '제주특별자치도', '제주도': '제주특별자치도',
-};
-function normalizeSido(name) {
-  if (!name) return name;
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 0) return name;
-  if (SIDO_ALIASES[parts[0]]) parts[0] = SIDO_ALIASES[parts[0]];
-  return parts.join(' ');
-}
-
 // 조정지역 판정
 function checkRegulated(regionName, dateStr) {
   if (!regionName || !dateStr) return null;
-  regionName = normalizeSido(regionName);
   // 날짜 직접 파싱 (timezone 이슈 방지)
   const [ty, tm, td] = dateStr.split('-').map(Number);
   const t = new Date(ty, tm - 1, td);
@@ -2389,7 +1575,6 @@ function selectHouse(n) {
     '조정지역은 중과세율이 적용됩니다'
   ];
   document.getElementById('house-hint').textContent = hints[n-1];
-  document.getElementById('contract-field').style.display = (n >= 2) ? 'block' : 'none';
 }
 
 function updateIndicator(step) {
@@ -2490,8 +1675,10 @@ function getHoldMonths(acqStr, saleStr) {
 
 // 장기보유특별공제
 // - 1세대1주택(houseN===1) 표2: 보유기간별(연 4%, 최대 40%) + 거주기간별(연 4%, 최대 40%) = 최대 80%
-//   지역(조정/비조정) 구분 없이, 거주기간은 항상 실제 입력한 거주기간 값으로 계산한다.
-//   (거주 2년 이상 3년 미만 8%, 3년 이상 연 4%씩 증가, 10년 이상 40% 한도. 2년 미만은 0%)
+//   · 조정대상지역(취득 당시 기준, 2년 거주요건 적용): 거주기간은 실제 입력한 거주기간(기간입력)으로 계산
+//     (거주 2년 이상 3년 미만 8%, 3년 이상 연 4%씩 증가, 10년 이상 40% 한도. 2년 미만은 0%)
+//   · 비조정지역(거주요건 없음): 거주기간을 별도로 입력받지 않으므로 보유기간(취득일~양도일, 날짜입력)
+//     전체를 거주한 것으로 간주하여 보유기간과 동일한 공제율을 적용
 // - 다주택자(houseN>1) 표1: 보유기간별 연 2%
 function getLthdRate(holdM, resideM, houseN, isReg) {
   const hy = Math.floor(holdM / 12);
@@ -2499,16 +1686,20 @@ function getLthdRate(holdM, resideM, houseN, isReg) {
   if (hy < 3) return { hr: 0, rr: 0, hy, ry };
 
   if (houseN === 1) {
-    if (ry < 2) {
-      // 거주기간 2년 미만: 장특공 표1 적용 (일반 장기보유특별공제, 연 2%, 최대 30%(15년))
-      return { hr: Math.min(hy * 0.02, 0.30), rr: 0, hy, ry, table: 1 };
-    }
-    // 거주기간 2년 이상: 장특공 표2 적용 (1세대1주택자 특례, 보유 연4% + 거주 연4%)
     const hr = Math.min(hy * 0.04, 0.40);
-    const rr = ry >= 3 ? Math.min(ry * 0.04, 0.40) : 0.08;
-    return { hr, rr, hy, ry, table: 2 };
+    let rr, ryDisplay;
+    if (isReg) {
+      if (ry >= 3)      rr = Math.min(ry * 0.04, 0.40);
+      else if (ry >= 2) rr = 0.08;
+      else              rr = 0;
+      ryDisplay = ry;
+    } else {
+      rr = hr;       // 거주요건 없음 → 보유기간(날짜입력)과 동일하게 적용
+      ryDisplay = hy;
+    }
+    return { hr, rr, hy, ry: ryDisplay };
   }
-  return { hr: Math.min(hy * 0.02, 0.30), rr: 0, hy, ry };
+  return { hr: Math.min(hy * 0.02, 0.20), rr: 0, hy, ry };
 }
 
 // 케이스 계산
@@ -2574,53 +1765,6 @@ function calcCase(gain, salePrice, holdM, resideM, houseN, isReg) {
 }
 
 // ============================================================
-// 다주택자 조정지역 중과 · 장특공 배제 — 한시적 유예 판정
-// ============================================================
-// 유예기간: 2022.5.10. ~ 2026.5.9. (다주택자 조정지역 양도 시 중과 미적용 + 장특공 정상)
-const SURCHARGE_SUSPEND_START = '2022-05-10';
-const SURCHARGE_SUSPEND_END   = '2026-05-09';
-
-// 유예 종료(2026.5.9.) 이후 보완규정: 2026.5.9.까지 매매계약 체결한 경우,
-// 계약일로부터 아래 기간 내 양도 시 유예 인정 (지역별 상이)
-const GRACE_CORE4 = ['서울특별시 강남구', '서울특별시 서초구', '서울특별시 송파구', '서울특별시 용산구'];
-function getGraceInfo(regionName, saleDate) {
-  const norm = normalizeSido(regionName);
-  if (GRACE_CORE4.includes(norm)) {
-    return { months: 4, deadline: '2026-09-09', label: '강남·서초·송파·용산' };
-  }
-  const reg = checkRegulated(regionName, saleDate);
-  if (reg && reg.isRegulated && reg.start === '2025-10-16') {
-    return { months: 6, deadline: '2026-11-09', label: '2025.10.16 신규 지정 조정대상지역' };
-  }
-  return null;
-}
-
-// 다주택자 중과/장특공배제가 실제로 적용되는지 판정
-// (isRegSale: 양도 시점 기준 조정지역 여부)
-function resolveSurcharge(regionName, saleDate, isRegSale, contractDate) {
-  if (!isRegSale) return { applies: false, reason: '비조정지역' };
-  if (!saleDate) return { applies: false, reason: '양도일 미입력' };
-
-  if (saleDate >= SURCHARGE_SUSPEND_START && saleDate <= SURCHARGE_SUSPEND_END) {
-    return { applies: false, reason: '유예기간(2022.5.10.~2026.5.9.) 내 양도' };
-  }
-  if (saleDate > SURCHARGE_SUSPEND_END) {
-    if (contractDate && contractDate <= SURCHARGE_SUSPEND_END) {
-      const grace = getGraceInfo(regionName, saleDate);
-      if (grace) {
-        const monthsBetween = getHoldMonths(contractDate, saleDate);
-        if (monthsBetween <= grace.months && saleDate <= grace.deadline) {
-          return { applies: false, reason: `보완규정 그레이스 기간 인정 (${grace.label}, 계약일로부터 ${grace.months}개월 이내)` };
-        }
-      }
-    }
-    return { applies: true, reason: '유예기간 종료 후 양도 (그레이스 요건 미충족)' };
-  }
-  // saleDate < SURCHARGE_SUSPEND_START (2022.5.10. 이전 양도)
-  return { applies: true, reason: '유예기간 이전 양도' };
-}
-
-// ============================================================
 // 메인 계산
 // ============================================================
 function calculate() {
@@ -2632,14 +1776,9 @@ function calculate() {
   const resideYear  = +document.getElementById('resideYear').value || 0;
   const resideMonth = +document.getElementById('resideMonth').value || 0;
   const resideMonths = resideYear * 12 + resideMonth;
-  const contractDate = document.getElementById('contractDate') ? document.getElementById('contractDate').value : '';
 
-  // 1세대1주택 2년 거주요건 등은 '취득 당시' 조정지역 여부로 판단
-  const regulatedAcq = checkRegulated(region, acqDate);
-  const isRegAcq = regulatedAcq ? regulatedAcq.isRegulated : false;
-  // 다주택자 중과·장특공배제는 '양도 시점' 조정지역 여부로 판단
-  const regulatedSale = checkRegulated(region, saleDate);
-  const isRegSale = regulatedSale ? regulatedSale.isRegulated : false;
+  const regulated = checkRegulated(region, acqDate);
+  const isReg = regulated ? regulated.isRegulated : false;
 
   // 보유기간 — 문자열 직접 파싱
   const holdM  = getHoldMonths(acqDate, saleDate);
@@ -2647,8 +1786,7 @@ function calculate() {
   const holdMr = holdM % 12;
   const gain   = salePrice - acqPrice;
 
-  renderResult({ region, acqDate, saleDate, acqPrice, salePrice, resideMonths, holdM, holdY, holdMr,
-    isReg: isRegAcq, isRegAcq, isRegSale, regulated: regulatedAcq, contractDate, gain, houseN: selectedHouse });
+  renderResult({ region, acqDate, saleDate, acqPrice, salePrice, resideMonths, holdM, holdY, holdMr, isReg, regulated, gain, houseN: selectedHouse });
 }
 
 // ============================================================
@@ -2662,30 +1800,11 @@ function renderResult(p) {
   const resideY   = Math.floor(p.resideMonths / 12);
   const resideM   = p.resideMonths % 12;
   const resideStr = `${resideY}년. ${resideM}개월.`;
-  const regLabelBasis = p.houseN >= 2 ? p.isRegSale : p.isReg;
-  const regLabel  = regLabelBasis ? '🚨 조정대상지역' : '✅ 비규제지역';
-  const regLabelNote = p.houseN >= 2 ? ' (양도일 기준)' : ' (취득일 기준)';
+  const regLabel  = p.isReg ? '🚨 조정대상지역' : '✅ 비규제지역';
 
-  // 다주택자(2주택 이상): 양도시점 조정지역 여부 + 한시적 유예·그레이스 기간을 반영해
-  // 실제로 중과/장특공배제가 적용되는지 판정
-  let surchargeInfo = null;
-  let effectiveIsReg = p.isReg;
-  if (p.houseN >= 2) {
-    surchargeInfo = resolveSurcharge(p.region, p.saleDate, p.isRegSale, p.contractDate);
-    effectiveIsReg = surchargeInfo.applies;
-  }
-
-  const r = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, effectiveIsReg);
+  const r = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, p.isReg);
 
   let html = '';
-
-  // 다주택자 유예/그레이스 안내 배너
-  if (p.houseN >= 2 && p.isRegSale) {
-    html += `<div class="rcard" style="border:1.5px solid ${effectiveIsReg ? '#f04452' : '#3182f6'};">
-      <div class="rcard-title">${effectiveIsReg ? '🚨 조정지역 다주택 중과 적용' : '✅ 조정지역 다주택 중과 유예 적용'}</div>
-      <div class="calc-row"><span class="cl">판정 사유</span><span class="cv" style="text-align:right;max-width:220px;">${surchargeInfo.reason}</span></div>
-    </div>`;
-  }
 
   // 요약
   if (r.exempt) {
@@ -2708,7 +1827,7 @@ function renderResult(p) {
   html += `<div class="rcard">
     <div class="rcard-title">기본 정보</div>
     <div class="calc-row"><span class="cl">소재지</span><span class="cv">${p.region}</span></div>
-    <div class="calc-row"><span class="cl">규제지역</span><span class="cv">${regLabel}<span style="font-size:11px;color:#8b95a1;">${regLabelNote}</span></span></div>
+    <div class="calc-row"><span class="cl">규제지역</span><span class="cv">${regLabel}</span></div>
     <div class="calc-row"><span class="cl">취득일</span><span class="cv">${fmtDate(p.acqDate)}</span></div>
     <div class="calc-row"><span class="cl">양도일</span><span class="cv">${fmtDate(p.saleDate)}</span></div>
     <div class="calc-row"><span class="cl">보유기간</span><span class="cv blue">${holdStr}</span></div>
@@ -2732,7 +1851,7 @@ function renderResult(p) {
         ? `장기보유특별공제 (보유 ${r.hrY}년 ${Math.round(r.hr*100)}% + 거주 ${r.rrY}년 ${Math.round(r.rr*100)}%)`
         : `장기보유특별공제 (${Math.round(r.lthdRate*100)}%)`;
       html += `<div class="calc-row"><span class="cl">${rateLabel}</span><span class="cv red">- ${fmt(r.lthd)}</span></div>`;
-    } else if (p.holdM >= 36 && p.houseN > 1 && effectiveIsReg) {
+    } else if (p.holdM >= 36 && p.houseN > 1 && p.isReg) {
       html += `<div class="calc-row"><span class="cl">장기보유특별공제</span><span class="cv red">중과로 배제</span></div>`;
     }
 
@@ -2766,17 +1885,15 @@ function renderResult(p) {
 
   // 2·3주택 비교
   if (p.houseN >= 2) {
-    const rSurchargeInfo = resolveSurcharge(p.region, p.saleDate, true /* 조정지역 가정 */, p.contractDate);
     const rN = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, false);
-    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, rSurchargeInfo.applies);
+    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, true);
     const sur = p.houseN === 2 ? '+20%p' : '+30%p';
     html += `<div class="rcard"><div class="rcard-title">일반지역 vs 조정지역 비교</div>
       <div class="calc-row"><span class="cl">일반지역 납부세액</span><span class="cv blue">${fmt(rN.totalTax)}</span></div>
       <div class="calc-row"><span class="cl">일반지역 장기보유공제</span><span class="cv">${Math.round(rN.lthdRate*100)}%</span></div>
-      <div class="calc-row"><span class="cl">조정지역 납부세액${rSurchargeInfo.applies ? ' (중과)' : ' (유예)'}</span><span class="cv ${rSurchargeInfo.applies ? 'red' : 'blue'}">${fmt(rR.totalTax)}</span></div>
-      <div class="calc-row"><span class="cl">조정지역 중과세율</span><span class="cv ${rSurchargeInfo.applies ? 'red' : ''}">${rSurchargeInfo.applies ? sur : '미적용(유예)'}</span></div>
-      <div class="calc-row"><span class="cl">조정지역 장기보유공제</span><span class="cv ${rSurchargeInfo.applies ? 'red' : ''}">${rSurchargeInfo.applies ? '배제' : Math.round(rR.lthdRate*100)+'%'}</span></div>
-      <div class="calc-row"><span class="cl" style="font-size:11px;color:#8b95a1;">${rSurchargeInfo.reason}</span><span class="cv"></span></div>
+      <div class="calc-row"><span class="cl">조정지역 납부세액 (중과)</span><span class="cv red">${fmt(rR.totalTax)}</span></div>
+      <div class="calc-row"><span class="cl">조정지역 중과세율</span><span class="cv red">${sur}</span></div>
+      <div class="calc-row"><span class="cl">조정지역 장기보유공제</span><span class="cv red">배제</span></div>
     </div>`;
   }
 
@@ -2788,7 +1905,7 @@ function renderResult(p) {
     if (p.salePrice > 1_200_000_000) tips.push('고가주택(12억 초과)은 초과분에만 과세됩니다. 12억 이하 양도 시 전액 비과세입니다.');
     if (p.holdM >= 36 && Math.round((r.lthdRate||0)*100) < 80) tips.push(`보유기간을 늘릴수록 장기보유특별공제율이 높아집니다 (최대 80%).`);
   }
-  if (!r.exempt && p.houseN >= 2 && effectiveIsReg) tips.push('조정지역 다주택은 중과세율이 적용됩니다. 비조정지역 주택 먼저 양도, 또는 1주택 상태 양도를 검토해보세요.');
+  if (!r.exempt && p.houseN >= 2 && p.isReg) tips.push('조정지역 다주택은 중과세율이 적용됩니다. 비조정지역 주택 먼저 양도, 또는 1주택 상태 양도를 검토해보세요.');
   if (!r.exempt && p.holdM < 36) tips.push('3년 이상 보유 시 장기보유특별공제가 적용되어 세액이 줄어듭니다.');
 
   if (tips.length) {
@@ -2832,167 +1949,5 @@ function resetAll() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
-<script>
-(function(){
-function numFmt(n) {
-      return Math.round(n).toLocaleString('ko-KR') + '원';
-    }
-    function parseNum(s) {
-      return parseInt((s || '').replace(/[^0-9]/g, '')) || 0;
-    }
-    function addComma(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('input', function () {
-        const raw = this.value.replace(/[^0-9]/g, '');
-        this.value = raw ? parseInt(raw).toLocaleString('ko-KR') : '';
-      });
-    }
-    ['cAcqPrice', 'trfPrice', 'expense', 'landVal', 'bldgVal'].forEach(addComma);
-
-    document.getElementById('isBldg').addEventListener('change', function () {
-      document.getElementById('bldgSection').style.display = this.checked ? 'block' : 'none';
-    });
-
-    function getHoldYears(aY, aM, aD, tY, tM, tD) {
-      const a = new Date(aY, aM - 1, aD);
-      const b = new Date(tY, tM - 1, tD);
-      let yrs = b.getFullYear() - a.getFullYear();
-      const md = b.getMonth() - a.getMonth();
-      if (md < 0 || (md === 0 && b.getDate() < a.getDate())) yrs--;
-      return yrs;
-    }
-
-    function getLtcRate(years) {
-      if (years < 3) return 0;
-      return Math.min(years * 0.02, 0.30);
-    }
-
-    function getIncomeTax(tb) {
-      const brackets = [
-        { limit: 14000000,   rate: 0.06, deduct: 0 },
-        { limit: 50000000,   rate: 0.15, deduct: 1260000 },
-        { limit: 88000000,   rate: 0.24, deduct: 5760000 },
-        { limit: 150000000,  rate: 0.35, deduct: 15440000 },
-        { limit: 300000000,  rate: 0.38, deduct: 19940000 },
-        { limit: 500000000,  rate: 0.40, deduct: 25940000 },
-        { limit: 1000000000, rate: 0.42, deduct: 35940000 },
-        { limit: Infinity,   rate: 0.45, deduct: 65940000 },
-      ];
-      for (const b of brackets) {
-        if (tb <= b.limit) return { rate: b.rate, deduct: b.deduct, tax: Math.round(tb * b.rate - b.deduct) };
-      }
-    }
-
-    function showErr(msg) {
-      const e = document.getElementById('errMsg');
-      e.textContent = msg;
-      e.style.display = 'block';
-    }
-    function clearErr() {
-      const e = document.getElementById('errMsg');
-      e.textContent = '';
-      e.style.display = 'none';
-    }
-
-    document.getElementById('calcBtn').addEventListener('click', function () {
-      clearErr();
-
-      const aY = parseInt(document.getElementById('cAcqY').value) || 0;
-      const aM = parseInt(document.getElementById('cAcqM').value) || 0;
-      const aD = parseInt(document.getElementById('cAcqD').value) || 0;
-      const tY = parseInt(document.getElementById('trfY').value) || 0;
-      const tM = parseInt(document.getElementById('trfM').value) || 0;
-      const tD = parseInt(document.getElementById('trfD').value) || 0;
-
-      if (!aY || !aM || !aD || !tY || !tM || !tD) {
-        showErr('취득일자와 양도일자를 모두 입력해주세요.');
-        return;
-      }
-      const acqDate = new Date(aY, aM - 1, aD);
-      const trfDate = new Date(tY, tM - 1, tD);
-      if (trfDate <= acqDate) {
-        showErr('양도일자는 취득일자 이후여야 해요.');
-        return;
-      }
-
-      const acqPrice = parseNum(document.getElementById('cAcqPrice').value);
-      const trfPrice = parseNum(document.getElementById('trfPrice').value);
-      const expense  = parseNum(document.getElementById('expense').value);
-
-      if (!acqPrice || !trfPrice) {
-        showErr('취득가액과 양도가액을 입력해주세요.');
-        return;
-      }
-
-      const holdYears = getHoldYears(aY, aM, aD, tY, tM, tD);
-      const ltcRate   = getLtcRate(holdYears);
-      const gain      = trfPrice - acqPrice - expense;
-
-      const rc = document.getElementById('resultCard');
-      rc.style.display = 'block';
-      rc.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      document.getElementById('resPeriodBadge').textContent = holdYears + '년 보유';
-      document.getElementById('rPeriodChip').textContent    = holdYears + '년 · ' + Math.round(ltcRate * 100) + '%';
-
-      document.getElementById('r1').textContent = numFmt(trfPrice);
-      document.getElementById('r2').textContent = '-' + numFmt(acqPrice);
-      document.getElementById('r3').textContent = '-' + numFmt(expense);
-      document.getElementById('r4').textContent = gain <= 0 ? '0원 (차익 없음)' : numFmt(gain);
-
-      if (gain <= 0) {
-        document.getElementById('r5').textContent  = '-0원';
-        document.getElementById('r7').textContent  = '0원';
-        document.getElementById('rRateChip').textContent = '0%';
-        document.getElementById('r8').textContent  = '0원';
-        document.getElementById('r9').textContent  = '-0원';
-        document.getElementById('r10').textContent = '0원';
-        document.getElementById('r11').textContent = '0원';
-        document.getElementById('r12').textContent = '0원';
-        document.getElementById('resFinal').textContent = '0원';
-        return;
-      }
-
-      const ltcDeduct  = Math.round(gain * ltcRate);
-      const basicDeduct = 2500000;
-      const taxBase    = Math.max(gain - ltcDeduct - basicDeduct, 0);
-      const { rate, deduct, tax } = getIncomeTax(taxBase);
-      const localTax   = Math.round(tax * 0.1);
-      const totalTax   = tax + localTax;
-
-      document.getElementById('r5').textContent  = (ltcDeduct > 0 ? '-' : '') + numFmt(ltcDeduct);
-      document.getElementById('r7').textContent  = numFmt(taxBase);
-      document.getElementById('rRateChip').textContent = Math.round(rate * 100) + '%';
-      document.getElementById('r8').textContent  = numFmt(Math.round(taxBase * rate));
-      document.getElementById('r9').textContent  = '-' + numFmt(deduct);
-      document.getElementById('r10').textContent = numFmt(tax);
-      document.getElementById('r11').textContent = numFmt(localTax);
-      document.getElementById('r12').textContent = numFmt(totalTax);
-      document.getElementById('resFinal').textContent = numFmt(totalTax);
-    });
-})();
-</script>
-<script>
-  function goToMenu() {
-    document.getElementById('menu-section').style.display = 'block';
-    document.getElementById('house-app').style.display = 'none';
-    document.getElementById('commercial-app').style.display = 'none';
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }
-  function goToHouse() {
-    document.getElementById('menu-section').style.display = 'none';
-    document.getElementById('house-app').style.display = 'block';
-    document.getElementById('commercial-app').style.display = 'none';
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }
-  function goToCommercial() {
-    document.getElementById('menu-section').style.display = 'none';
-    document.getElementById('house-app').style.display = 'none';
-    document.getElementById('commercial-app').style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }
-</script>
-
 </body>
 </html>
