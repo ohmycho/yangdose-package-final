@@ -1012,39 +1012,6 @@
       <p class="hero-desc">취득·양도 정보를 입력하면 장기보유특별공제를<br>자동 반영해 세금을 계산해드려요.</p>
     </div>
 
-    <!-- 부동산 종류 -->
-    <div class="section">
-      <p class="section-title">부동산 종류</p>
-      <div class="card">
-        <div class="toggle-field">
-          <div class="toggle-label-wrap">
-            <div class="toggle-label-main">빌딩 (토지·건물 분리)</div>
-            <div class="toggle-label-sub">계약서에 토지·건물 금액이 구분된 경우</div>
-          </div>
-          <label class="toss-toggle">
-            <input type="checkbox" id="isBldg">
-            <span class="toss-toggle-bg"></span>
-            <span class="toss-toggle-dot"></span>
-          </label>
-        </div>
-        <div id="bldgSection" style="display:none; border-top: 1px solid var(--gray-100);">
-          <div class="sub-card" style="margin-top:14px;">
-            <div class="sub-card-title">계약서상 금액</div>
-            <div class="sub-field">
-              <span class="sub-field-label">토지가액</span>
-              <input type="text" id="landVal" inputmode="numeric" placeholder="0">
-              <span class="sub-field-unit">원</span>
-            </div>
-            <div class="sub-field">
-              <span class="sub-field-label">건물가액</span>
-              <input type="text" id="bldgVal" inputmode="numeric" placeholder="0">
-              <span class="sub-field-unit">원</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 취득 정보 -->
     <div class="section">
       <p class="section-title">취득 정보</p>
@@ -2851,11 +2818,7 @@ function numFmt(n) {
         this.value = raw ? parseInt(raw).toLocaleString('ko-KR') : '';
       });
     }
-    ['cAcqPrice', 'trfPrice', 'expense', 'landVal', 'bldgVal'].forEach(addComma);
-
-    document.getElementById('isBldg').addEventListener('change', function () {
-      document.getElementById('bldgSection').style.display = this.checked ? 'block' : 'none';
-    });
+    ['cAcqPrice', 'trfPrice', 'expense'].forEach(addComma);
 
     function getHoldYears(aY, aM, aD, tY, tM, tD) {
       const a = new Date(aY, aM - 1, aD);
